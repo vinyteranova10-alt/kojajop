@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KojaJob</title>
+  <title>KojaJob - Trouvez un professionnel</title>
 
   <style>
     * {
@@ -20,8 +20,8 @@
 
     .app {
       max-width: 500px;
-      margin: auto;
       min-height: 100vh;
+      margin: auto;
       background: white;
     }
 
@@ -33,7 +33,7 @@
     }
 
     header h1 {
-      font-size: 32px;
+      font-size: 34px;
       margin-bottom: 10px;
     }
 
@@ -42,7 +42,7 @@
     }
 
     .content {
-      padding: 25px 20px;
+      padding: 20px;
     }
 
     .search {
@@ -50,8 +50,8 @@
       padding: 15px;
       border: 1px solid #ddd;
       border-radius: 10px;
-      margin-bottom: 20px;
       font-size: 16px;
+      margin-bottom: 20px;
     }
 
     .title {
@@ -73,19 +73,46 @@
     }
 
     .card p {
+      margin-bottom: 7px;
       color: #666;
-      margin-bottom: 12px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
     }
 
     .button {
-      display: inline-block;
-      background: #111827;
-      color: white;
-      padding: 12px 18px;
+      flex: 1;
+      padding: 12px;
       border-radius: 8px;
-      text-decoration: none;
       border: none;
       cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .call {
+      background: #111827;
+      color: white;
+    }
+
+    .whatsapp {
+      background: #25D366;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .no-result {
+      text-align: center;
+      padding: 20px;
+      color: #777;
+      display: none;
     }
 
     footer {
@@ -99,48 +126,118 @@
 
 <body>
 
-  <div class="app">
+<div class="app">
 
-    <header>
-      <h1>KojaJob</h1>
-      <p>Trouvez un professionnel près de chez vous</p>
-    </header>
+  <header>
+    <h1>KojaJob</h1>
+    <p>Trouvez un professionnel près de chez vous</p>
+  </header>
 
-    <div class="content">
+  <div class="content">
 
-      <input
-        class="search"
-        type="text"
-        placeholder="Que recherchez-vous ?"
-      >
+    <input
+      id="search"
+      class="search"
+      type="text"
+      placeholder="Que recherchez-vous ?"
+    >
 
-      <div class="title">Professionnels disponibles</div>
+    <div class="title">Professionnels disponibles</div>
 
-      <div class="card">
-        <h3>Coiffeur / Barbier</h3>
-        <p>Coupe homme • Dégradé • Coiffure</p>
-        <button class="button">Voir le professionnel</button>
+    <div id="professionals">
+
+      <div class="card professional">
+        <h3>Jean - Coiffeur</h3>
+        <p>✂️ Coupe homme • Dégradé</p>
+        <p>📍 Yaoundé</p>
+
+        <div class="buttons">
+          <a class="button call" href="tel:+237690000000">Appeler</a>
+          <a class="button whatsapp"
+             href="https://wa.me/237690000000"
+             target="_blank">
+             WhatsApp
+          </a>
+        </div>
       </div>
 
-      <div class="card">
-        <h3>Électricien</h3>
-        <p>Installation • Réparation • Dépannage</p>
-        <button class="button">Voir le professionnel</button>
+      <div class="card professional">
+        <h3>Paul - Électricien</h3>
+        <p>⚡ Installation • Réparation</p>
+        <p>📍 Yaoundé</p>
+
+        <div class="buttons">
+          <a class="button call" href="tel:+237691111111">Appeler</a>
+          <a class="button whatsapp"
+             href="https://wa.me/237691111111"
+             target="_blank">
+             WhatsApp
+          </a>
+        </div>
       </div>
 
-      <div class="card">
-        <h3>Plombier</h3>
-        <p>Réparation • Installation • Dépannage</p>
-        <button class="button">Voir le professionnel</button>
+      <div class="card professional">
+        <h3>Michel - Plombier</h3>
+        <p>🔧 Installation • Dépannage</p>
+        <p>📍 Yaoundé</p>
+
+        <div class="buttons">
+          <a class="button call" href="tel:+237692222222">Appeler</a>
+          <a class="button whatsapp"
+             href="https://wa.me/237692222222"
+             target="_blank">
+             WhatsApp
+          </a>
+        </div>
       </div>
 
     </div>
 
-    <footer>
-      © 2026 KojaJob
-    </footer>
+    <div id="noResult" class="no-result">
+      Aucun professionnel trouvé.
+    </div>
 
   </div>
+
+  <footer>
+    © 2026 KojaJob
+  </footer>
+
+</div>
+
+<script>
+
+  const search = document.getElementById("search");
+  const professionals = document.querySelectorAll(".professional");
+  const noResult = document.getElementById("noResult");
+
+  search.addEventListener("input", function() {
+
+    const value = search.value.toLowerCase().trim();
+    let found = 0;
+
+    professionals.forEach(function(card) {
+
+      const text = card.textContent.toLowerCase();
+
+      if (text.includes(value)) {
+        card.style.display = "block";
+        found++;
+      } else {
+        card.style.display = "none";
+      }
+
+    });
+
+    if (found === 0) {
+      noResult.style.display = "block";
+    } else {
+      noResult.style.display = "none";
+    }
+
+  });
+
+</script>
 
 </body>
 </html>
