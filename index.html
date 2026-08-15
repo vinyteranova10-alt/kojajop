@@ -165,156 +165,202 @@
 
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script type="module">
 
-<script>
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
-  authDomain: "kojajop.firebaseapp.com",
-  projectId: "kojajop",
-  storageBucket: "kojajop.firebasestorage.app",
-  messagingSenderId: "982386680439",
-  appId: "1:982386680439:web:5fd9da8d9ee1d4243b9c72"
-};
+  import {
+    getFirestore,
+    collection,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-const zone = document.getElementById("professionals");
-const recherche = document.getElementById("search");
 
-let professionnels = [];
+  const firebaseConfig = {
+    apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
+    authDomain: "kojajop.firebaseapp.com",
+    projectId: "kojajop",
+    storageBucket: "kojajop.firebasestorage.app",
+    messagingSenderId: "982386680439",
+    appId: "1:982386680439:web:5fd9da8d9ee1d4243b9c72",
+    measurementId: "G-E2NZDGMD4L"
+  };
 
-try {
 
-  firebase.initializeApp(firebaseConfig);
+  const app = initializeApp(firebaseConfig);
 
-  const db = firebase.firestore();
+  const db = getFirestore(app);
 
-  db.collection("Professionnels")
-    .get()
-    .then(function(snapshot) {
+  const zone =
+    document.getElementById("professionals");
+
+  const recherche =
+    document.getElementById("search");
+
+
+  let professionnels = [];
+
+
+  async function chargerProfessionnels() {
+
+    try {
+
+      const resultat =
+        await getDocs(
+          collection(db, "Professionnels")
+        );
 
       professionnels = [];
 
-      snapshot.forEach(function(doc) {
+      resultat.forEach((document) => {
 
-        const data = doc.data();
-
-        professionnels.push(data);
+        professionnels.push({
+          id: document.id,
+          ...document.data()
+        });
 
       });
 
       afficher(professionnels);
 
-    })
-    .catch(function(error) {
+    } catch (erreur) {
+
+      console.error(erreur);
 
       zone.innerHTML =
-        "<div class='message'>Erreur Firebase : " +
-        error.message +
+        "<div class='message'>" +
+        "Erreur Firebase : " +
+        erreur.message +
         "</div>";
 
-    });
+    }
 
-} catch (error) {
-
-  zone.innerHTML =
-    "<div class='message'>Erreur : " +
-    error.message +
-    "</div>";
-
-}
-
-
-function afficher(liste) {
-
-  zone.innerHTML = "";
-
-  if (liste.length === 0) {
-
-    zone.innerHTML =
-      "<div class='message'>Aucun professionnel trouvé.</div>";
-
-    return;
   }
 
-  liste.forEach(function(pro) {
 
-    const nom =
-      pro.nom || "Professionnel";
+  function afficher(liste) {
 
-    const metier =
-      pro.Metier || pro.metier || "";
+    zone.innerHTML = "";
 
-    const ville =
-      pro.Ville || pro.ville || "";
+    if (liste.length === 0) {
 
-    const telephone =
-      pro.Téléphone || pro.telephone || "";
+      zone.innerHTML =
+        "<div class='message'>" +
+        "Aucun professionnel trouvé." +
+        "</div>";
 
-    const phone =
-      telephone.toString().replace(/\s/g, "");
-
-    const carte =
-      document.createElement("div");
-
-    carte.className = "card";
-
-    carte.innerHTML =
-
-      "<h3>" + nom + "</h3>" +
-
-      "<p>🔧 " + metier + "</p>" +
-
-      "<p>📍 " + ville + "</p>" +
-
-      "<div class='buttons'>" +
-
-      "<a class='button call' href='tel:+237" +
-      phone +
-      "'>Appeler</a>" +
-
-      "<a class='button whatsapp' href='https://wa.me/237" +
-      phone +
-      "' target='_blank'>WhatsApp</a>" +
-
-      "</div>";
-
-    zone.appendChild(carte);
-
-  });
-
-}
+      return;
+    }
 
 
-recherche.addEventListener("input", function() {
-
-  const texte =
-    recherche.value.toLowerCase().trim();
-
-  const resultats =
-    professionnels.filter(function(pro) {
+    liste.forEach((pro) => {
 
       const nom =
-        (pro.nom || "").toLowerCase();
+        pro.nom || "Professionnel";
 
       const metier =
-        (pro.Metier || pro.metier || "").toLowerCase();
+        pro.Metier || pro.metier || "";
 
       const ville =
-        (pro.Ville || pro.ville || "").toLowerCase();
+        pro.Ville || pro.ville || "";
 
-      return (
-        nom.includes(texte) ||
-        metier.includes(texte) ||
-        ville.includes(texte)
-      );
+      const telephone =
+        pro.Téléphone || pro.telephone || "";
+
+      const phone =
+        String(telephone).replace(/\s/g, "");
+
+
+      const carte =
+        document.createElement("div");
+
+      carte.className = "card";
+
+
+      carte.innerHTML = `
+
+        <h3>${nom}</h3>
+
+        <p>🔧 ${metier}</p>
+
+        <p>📍 ${ville}</p>
+
+        <div class="buttons">
+
+          <a
+            class="button call"
+            href="tel:+237${phone}">
+            Appeler
+          </a>
+
+          <a
+            class="button whatsapp"
+            href="https://wa.me/237${phone}"
+            target="_blank">
+            WhatsApp
+          </a>
+
+        </div>
+
+      `;
+
+
+      zone.appendChild(carte);
 
     });
 
-  afficher(resultats);
+  }
 
-});
+
+  recherche.addEventListener(
+    "input",
+    function() {
+
+      const texte =
+        recherche.value
+          .toLowerCase()
+          .trim();
+
+
+      const resultats =
+        professionnels.filter((pro) => {
+
+          const nom =
+            String(pro.nom || "")
+              .toLowerCase();
+
+          const metier =
+            String(
+              pro.Metier ||
+              pro.metier ||
+              ""
+            ).toLowerCase();
+
+          const ville =
+            String(
+              pro.Ville ||
+              pro.ville ||
+              ""
+            ).toLowerCase();
+
+
+          return (
+            nom.includes(texte) ||
+            metier.includes(texte) ||
+            ville.includes(texte)
+          );
+
+        });
+
+
+      afficher(resultats);
+
+    }
+  );
+
+
+  chargerProfessionnels();
 
 </script>
 
