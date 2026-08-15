@@ -256,31 +256,34 @@
       `;
 
       professionalsContainer.appendChild(card);
-    });
-  }
+    }
+  }db.collection("Professionnels")
+  .get()
+  .then(function(snapshot) {
 
-  db.collection("Professionnels")
-    .get()
-    .then(function(snapshot) {
+    console.log("Nombre de professionnels :", snapshot.size);
 
-      professionals = [];
+    professionals = [];
 
-      snapshot.forEach(function(doc) {
-        professionals.push(doc.data());
-      });
-
-      afficherProfessionnels(professionals);
-
-    })
-    .catch(function(error) {
-
-      console.error("Erreur Firebase :", error);
-
-      professionalsContainer.innerHTML =
-        "<p>Impossible de charger les professionnels.</p>";
+    snapshot.forEach(function(doc) {
+      console.log("Document trouvé :", doc.id, doc.data());
+      professionals.push(doc.data());
     });
 
-  search.addEventListener("input", function() {
+    afficherProfessionnels(professionals);
+
+  })
+  .catch(function(error) {
+
+    console.error("ERREUR FIREBASE :", error);
+
+    professionalsContainer.innerHTML =
+      "<p>Erreur Firebase : " + error.message + "</p>";
+
+    noResult.style.display = "none";
+  });
+
+  
 
     const valeur = search.value
       .toLowerCase()
