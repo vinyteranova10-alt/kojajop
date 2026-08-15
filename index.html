@@ -210,7 +210,7 @@
         await getDocs(
           collection(db, "Professionnels")
         );
-
+zone.innerHTML = "<div class='message'>Documents reçus : " + resultat.size + "</div>";
       professionnels = [];
 
       resultat.forEach((document) => {
