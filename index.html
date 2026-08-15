@@ -54,6 +54,19 @@
       margin-bottom: 20px;
     }
 
+    .professional-button {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 20px;
+      background: #111827;
+      color: white;
+      border-radius: 10px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
     .title {
       font-size: 22px;
       font-weight: bold;
@@ -104,15 +117,17 @@
       color: white;
     }
 
-    .hidden {
-      display: none;
-    }
-
     .no-result {
       text-align: center;
       padding: 20px;
       color: #777;
       display: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #777;
     }
 
     footer {
@@ -134,14 +149,14 @@
   </header>
 
   <div class="content">
-<a
-  href="#"
-  class="button call"
-  style="display:block; margin-bottom:20px; text-align:center;"
-  onclick="alert('La création de profil professionnel sera disponible très bientôt.'); return false;">
-  👤 Je suis un professionnel
-</a>
-</a>
+
+    <a
+      href="#"
+      class="professional-button"
+      onclick="alert('La création de profil professionnel sera disponible très bientôt.'); return false;">
+      👤 Je suis un professionnel
+    </a>
+
     <input
       id="search"
       class="search"
@@ -152,52 +167,7 @@
     <div class="title">Professionnels disponibles</div>
 
     <div id="professionals">
-
-      <div class="card professional">
-        <h3>Jean - Coiffeur</h3>
-        <p>✂️ Coupe homme • Dégradé</p>
-        <p>📍 Yaoundé</p>
-
-        <div class="buttons">
-          <a class="button call" href="tel:+237690000000">Appeler</a>
-          <a class="button whatsapp"
-             href="https://wa.me/237690000000"
-             target="_blank">
-             WhatsApp
-          </a>
-        </div>
-      </div>
-
-      <div class="card professional">
-        <h3>Paul - Électricien</h3>
-        <p>⚡ Installation • Réparation</p>
-        <p>📍 Yaoundé</p>
-
-        <div class="buttons">
-          <a class="button call" href="tel:+237691111111">Appeler</a>
-          <a class="button whatsapp"
-             href="https://wa.me/237691111111"
-             target="_blank">
-             WhatsApp
-          </a>
-        </div>
-      </div>
-
-      <div class="card professional">
-        <h3>Michel - Plombier</h3>
-        <p>🔧 Installation • Dépannage</p>
-        <p>📍 Yaoundé</p>
-
-        <div class="buttons">
-          <a class="button call" href="tel:+237692222222">Appeler</a>
-          <a class="button whatsapp"
-             href="https://wa.me/237692222222"
-             target="_blank">
-             WhatsApp
-          </a>
-        </div>
-      </div>
-
+      <div class="loading">Chargement des professionnels...</div>
     </div>
 
     <div id="noResult" class="no-result">
@@ -212,38 +182,125 @@
 
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
+    authDomain: "kojajop.firebaseapp.com",
+    projectId: "kojajop",
+    storageBucket: "kojajop.firebasestorage.app",
+    messagingSenderId: "982386680439",
+    appId: "1:982386680439:web:5fd9da8d9ee1d4243b9c72",
+    measurementId: "G-E2NZDGMD4L"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  const db = firebase.firestore();
+
+  const professionalsContainer =
+    document.getElementById("professionals");
 
   const search = document.getElementById("search");
-  const professionals = document.querySelectorAll(".professional");
-  const noResult = document.getElementById("noResult");
+
+  const noResult =
+    document.getElementById("noResult");
+
+  let professionals = [];
+
+  function afficherProfessionnels(liste) {
+
+    professionalsContainer.innerHTML = "";
+
+    if (liste.length === 0) {
+      noResult.style.display = "block";
+      return;
+    }
+
+    noResult.style.display = "none";
+
+    liste.forEach(function(pro) {
+
+      const nom = pro.nom || "Professionnel";
+      const metier = pro.Metier || pro.metier || "";
+      const ville = pro.Ville || pro.ville || "";
+      const telephone = pro.Téléphone || pro.telephone || "";
+
+      const phone = telephone.toString().replace(/\s/g, "");
+
+      const card = document.createElement("div");
+      card.className = "card professional";
+
+      card.innerHTML = `
+        <h3>${nom} - ${metier}</h3>
+        <p>🔧 ${metier}</p>
+        <p>📍 ${ville}</p>
+
+        <div class="buttons">
+          <a
+            class="button call"
+            href="tel:+237${phone}">
+            Appeler
+          </a>
+
+          <a
+            class="button whatsapp"
+            href="https://wa.me/237${phone}"
+            target="_blank">
+            WhatsApp
+          </a>
+        </div>
+      `;
+
+      professionalsContainer.appendChild(card);
+    });
+  }
+
+  db.collection("Professionnels")
+    .get()
+    .then(function(snapshot) {
+
+      professionals = [];
+
+      snapshot.forEach(function(doc) {
+        professionals.push(doc.data());
+      });
+
+      afficherProfessionnels(professionals);
+
+    })
+    .catch(function(error) {
+
+      console.error("Erreur Firebase :", error);
+
+      professionalsContainer.innerHTML =
+        "<p>Impossible de charger les professionnels.</p>";
+    });
 
   search.addEventListener("input", function() {
 
-    const value = search.value.toLowerCase().trim();
-    let found = 0;
+    const valeur = search.value
+      .toLowerCase()
+      .trim();
 
-    professionals.forEach(function(card) {
+    const resultats = professionals.filter(function(pro) {
 
-      const text = card.textContent.toLowerCase();
+      const texte = `
+        ${pro.nom || ""}
+        ${pro.Metier || ""}
+        ${pro.metier || ""}
+        ${pro.Ville || ""}
+        ${pro.ville || ""}
+      `.toLowerCase();
 
-      if (text.includes(value)) {
-        card.style.display = "block";
-        found++;
-      } else {
-        card.style.display = "none";
-      }
-
+      return texte.includes(valeur);
     });
 
-    if (found === 0) {
-      noResult.style.display = "block";
-    } else {
-      noResult.style.display = "none";
-    }
-
+    afficherProfessionnels(resultats);
   });
-
 </script>
 
 </body>
