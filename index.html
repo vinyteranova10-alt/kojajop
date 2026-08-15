@@ -3,19 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KojaJob - Trouvez un professionnel</title>
+  <title>KojaJob</title>
 
   <style>
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
       font-family: Arial, sans-serif;
     }
 
     body {
+      margin: 0;
       background: #f5f7fa;
-      color: #222;
     }
 
     .app {
@@ -28,21 +26,34 @@
     header {
       background: #111827;
       color: white;
-      padding: 35px 20px;
       text-align: center;
+      padding: 35px 20px;
     }
 
     header h1 {
+      margin: 0 0 10px;
       font-size: 34px;
-      margin-bottom: 10px;
     }
 
     header p {
-      font-size: 16px;
+      margin: 0;
     }
 
     .content {
       padding: 20px;
+    }
+
+    .professional-button {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: #111827;
+      color: white;
+      border-radius: 10px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
     }
 
     .search {
@@ -52,19 +63,6 @@
       border-radius: 10px;
       font-size: 16px;
       margin-bottom: 20px;
-    }
-
-    .professional-button {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 20px;
-      background: #111827;
-      color: white;
-      border-radius: 10px;
-      text-align: center;
-      text-decoration: none;
-      font-weight: bold;
     }
 
     .title {
@@ -78,15 +76,13 @@
       border-radius: 14px;
       padding: 18px;
       margin-bottom: 15px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
     }
 
     .card h3 {
-      margin-bottom: 8px;
+      margin-top: 0;
     }
 
     .card p {
-      margin-bottom: 7px;
       color: #666;
     }
 
@@ -100,8 +96,6 @@
       flex: 1;
       padding: 12px;
       border-radius: 8px;
-      border: none;
-      cursor: pointer;
       text-align: center;
       text-decoration: none;
       font-weight: bold;
@@ -117,14 +111,7 @@
       color: white;
     }
 
-    .no-result {
-      text-align: center;
-      padding: 20px;
-      color: #777;
-      display: none;
-    }
-
-    .loading {
+    .message {
       text-align: center;
       padding: 20px;
       color: #777;
@@ -167,11 +154,7 @@
     <div class="title">Professionnels disponibles</div>
 
     <div id="professionals">
-      <div class="loading">Chargement des professionnels...</div>
-    </div>
-
-    <div id="noResult" class="no-result">
-      Aucun professionnel trouvé.
+      <div class="message">Chargement des professionnels...</div>
     </div>
 
   </div>
@@ -182,128 +165,157 @@
 
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
-    authDomain: "kojajop.firebaseapp.com",
-    projectId: "kojajop",
-    storageBucket: "kojajop.firebasestorage.app",
-    messagingSenderId: "982386680439",
-    appId: "1:982386680439:web:5fd9da8d9ee1d4243b9c72",
-    measurementId: "G-E2NZDGMD4L"
-  };
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
+  authDomain: "kojajop.firebaseapp.com",
+  projectId: "kojajop",
+  storageBucket: "kojajop.firebasestorage.app",
+  messagingSenderId: "982386680439",
+  appId: "1:982386680439:web:5fd9da8d9ee1d4243b9c72"
+};
+
+const zone = document.getElementById("professionals");
+const recherche = document.getElementById("search");
+
+let professionnels = [];
+
+try {
 
   firebase.initializeApp(firebaseConfig);
 
   const db = firebase.firestore();
 
-  const professionalsContainer =
-    document.getElementById("professionals");
+  db.collection("Professionnels")
+    .get()
+    .then(function(snapshot) {
 
-  const search = document.getElementById("search");
+      professionnels = [];
 
-  const noResult =
-    document.getElementById("noResult");
+      snapshot.forEach(function(doc) {
 
-  let professionals = [];
+        const data = doc.data();
 
-  function afficherProfessionnels(liste) {
+        professionnels.push(data);
 
-    professionalsContainer.innerHTML = "";
+      });
 
-    if (liste.length === 0) {
-      noResult.style.display = "block";
-      return;
-    }
+      afficher(professionnels);
 
-    noResult.style.display = "none";
+    })
+    .catch(function(error) {
 
-    liste.forEach(function(pro) {
+      zone.innerHTML =
+        "<div class='message'>Erreur Firebase : " +
+        error.message +
+        "</div>";
 
-      const nom = pro.nom || "Professionnel";
-      const metier = pro.Metier || pro.metier || "";
-      const ville = pro.Ville || pro.ville || "";
-      const telephone = pro.Téléphone || pro.telephone || "";
-
-      const phone = telephone.toString().replace(/\s/g, "");
-
-      const card = document.createElement("div");
-      card.className = "card professional";
-
-      card.innerHTML = `
-        <h3>${nom} - ${metier}</h3>
-        <p>🔧 ${metier}</p>
-        <p>📍 ${ville}</p>
-
-        <div class="buttons">
-          <a
-            class="button call"
-            href="tel:+237${phone}">
-            Appeler
-          </a>
-
-          <a
-            class="button whatsapp"
-            href="https://wa.me/237${phone}"
-            target="_blank">
-            WhatsApp
-          </a>
-        </div>
-      `;
-
-      professionalsContainer.appendChild(card);
-    }
-  }db.collection("Professionnels")
-  .get()
-  .then(function(snapshot) {
-
-    console.log("Nombre de professionnels :", snapshot.size);
-
-    professionals = [];
-
-    snapshot.forEach(function(doc) {
-      console.log("Document trouvé :", doc.id, doc.data());
-      professionals.push(doc.data());
     });
 
-    afficherProfessionnels(professionals);
+} catch (error) {
 
-  })
-  .catch(function(error) {
+  zone.innerHTML =
+    "<div class='message'>Erreur : " +
+    error.message +
+    "</div>";
 
-    console.error("ERREUR FIREBASE :", error);
+}
 
-    professionalsContainer.innerHTML =
-      "<p>Erreur Firebase : " + error.message + "</p>";
 
-    noResult.style.display = "none";
+function afficher(liste) {
+
+  zone.innerHTML = "";
+
+  if (liste.length === 0) {
+
+    zone.innerHTML =
+      "<div class='message'>Aucun professionnel trouvé.</div>";
+
+    return;
+  }
+
+  liste.forEach(function(pro) {
+
+    const nom =
+      pro.nom || "Professionnel";
+
+    const metier =
+      pro.Metier || pro.metier || "";
+
+    const ville =
+      pro.Ville || pro.ville || "";
+
+    const telephone =
+      pro.Téléphone || pro.telephone || "";
+
+    const phone =
+      telephone.toString().replace(/\s/g, "");
+
+    const carte =
+      document.createElement("div");
+
+    carte.className = "card";
+
+    carte.innerHTML =
+
+      "<h3>" + nom + "</h3>" +
+
+      "<p>🔧 " + metier + "</p>" +
+
+      "<p>📍 " + ville + "</p>" +
+
+      "<div class='buttons'>" +
+
+      "<a class='button call' href='tel:+237" +
+      phone +
+      "'>Appeler</a>" +
+
+      "<a class='button whatsapp' href='https://wa.me/237" +
+      phone +
+      "' target='_blank'>WhatsApp</a>" +
+
+      "</div>";
+
+    zone.appendChild(carte);
+
   });
 
-  
+}
 
-    const valeur = search.value
-      .toLowerCase()
-      .trim();
 
-    const resultats = professionals.filter(function(pro) {
+recherche.addEventListener("input", function() {
 
-      const texte = `
-        ${pro.nom || ""}
-        ${pro.Metier || ""}
-        ${pro.metier || ""}
-        ${pro.Ville || ""}
-        ${pro.ville || ""}
-      `.toLowerCase();
+  const texte =
+    recherche.value.toLowerCase().trim();
 
-      return texte.includes(valeur);
+  const resultats =
+    professionnels.filter(function(pro) {
+
+      const nom =
+        (pro.nom || "").toLowerCase();
+
+      const metier =
+        (pro.Metier || pro.metier || "").toLowerCase();
+
+      const ville =
+        (pro.Ville || pro.ville || "").toLowerCase();
+
+      return (
+        nom.includes(texte) ||
+        metier.includes(texte) ||
+        ville.includes(texte)
+      );
+
     });
 
-    afficherProfessionnels(resultats);
-  });
+  afficher(resultats);
+
+});
+
 </script>
 
 </body>
