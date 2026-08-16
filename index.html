@@ -176,12 +176,21 @@
 
 </div>
 
+<script type="module">
 
-<script type="import {
-  getFirestore,
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+  /* ================================
+     FIREBASE
+  ================================= */
+
+  import {
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+  import {
+    getFirestore,
+    collection,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 
   const firebaseConfig = {
@@ -203,12 +212,14 @@
   };
 
 
-  const app =
-    initializeApp(firebaseConfig);
+  const app = initializeApp(firebaseConfig);
 
-  const db =
-    getFirestore(app);
+  const db = getFirestore(app);
 
+
+  /* ================================
+     ELEMENTS DE LA PAGE
+  ================================= */
 
   const zone =
     document.getElementById("professionals");
@@ -220,49 +231,28 @@
   let professionnels = [];
 
 
+  /* ================================
+     CHARGER LES PROFESSIONNELS
+  ================================= */
+
   async function chargerProfessionnels() {
 
     zone.innerHTML =
-      "<div class='message'>Chargement...</div>";
-
+      "<div class='message'>Chargement des professionnels...</div>";
 
     try {
 
-  
-        const referenceJean =
-  doc(
-    db,
-    "Professionnels",
-    "h3rHA6yAsnmmUnwAvMm7"
-  );
+      console.log("Connexion à Firestore...");
 
-const resultat =
-  await getDoc(referenceJean);
+      const reference =
+        collection(db, "Professionnels");
 
-if (!resultat.exists()) {
-  zone.innerHTML =
-    "<div class='message error'>" +
-    "Le document Jean n'est pas trouvé par l'application." +
-    "</div>";
-  return;
-}
-
-const jean =
-  resultat.data();
-
-zone.innerHTML = `
-  <div class="card">
-    <h3>${jean.nom || jean.Nom || "Jean"}</h3>
-    <p>🔧 ${jean.Metier || jean.metier || ""}</p>
-    <p>📍 ${jean.Ville || jean.ville || ""}</p>
-  </div>
-`;
-
-return;
+      const resultat =
+        await getDocs(reference);
 
 
       console.log(
-        "Documents trouvés :",
+        "Nombre de documents trouvés :",
         resultat.size
       );
 
@@ -287,17 +277,26 @@ return;
       });
 
 
+      console.log(
+        "Professionnels chargés :",
+        professionnels
+      );
+
+
       afficher(professionnels);
 
 
     } catch (erreur) {
 
-      console.error(erreur);
+      console.error(
+        "Erreur Firebase :",
+        erreur
+      );
 
 
       zone.innerHTML =
         "<div class='message error'>" +
-        "<strong>Erreur Firebase</strong><br><br>" +
+        "<strong>Impossible de charger les professionnels.</strong><br><br>" +
         erreur.message +
         "</div>";
 
@@ -305,6 +304,10 @@ return;
 
   }
 
+
+  /* ================================
+     AFFICHER LES PROFESSIONNELS
+  ================================= */
 
   function afficher(liste) {
 
@@ -354,7 +357,8 @@ return;
       const phone =
         String(telephone)
           .replace(/\s/g, "")
-          .replace(/\+/g, "");
+          .replace(/^\+237/, "")
+          .replace(/^237/, "");
 
 
       const carte =
@@ -415,6 +419,10 @@ return;
   }
 
 
+  /* ================================
+     RECHERCHE
+  ================================= */
+
   recherche.addEventListener(
     "input",
     function() {
@@ -471,6 +479,10 @@ return;
     }
   );
 
+
+  /* ================================
+     LANCER LE CHARGEMENT
+  ================================= */
 
   chargerProfessionnels();
 
