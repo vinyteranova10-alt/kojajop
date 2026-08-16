@@ -177,16 +177,11 @@
 </div>
 
 
-<script type="module">
-
-  import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-
-  import {
-    getFirestore,
-    collection,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+<script type="import {
+  getFirestore,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 
   const firebaseConfig = {
@@ -233,10 +228,37 @@
 
     try {
 
-      const resultat =
-        await getDocs(
-          collection(db, "Professionnels")
-        );
+  
+        const referenceJean =
+  doc(
+    db,
+    "Professionnels",
+    "h3rHA6yAsnmmUnwAvMm7"
+  );
+
+const resultat =
+  await getDoc(referenceJean);
+
+if (!resultat.exists()) {
+  zone.innerHTML =
+    "<div class='message error'>" +
+    "Le document Jean n'est pas trouvé par l'application." +
+    "</div>";
+  return;
+}
+
+const jean =
+  resultat.data();
+
+zone.innerHTML = `
+  <div class="card">
+    <h3>${jean.nom || jean.Nom || "Jean"}</h3>
+    <p>🔧 ${jean.Metier || jean.metier || ""}</p>
+    <p>📍 ${jean.Ville || jean.ville || ""}</p>
+  </div>
+`;
+
+return;
 
 
       console.log(
