@@ -7,7 +7,6 @@
   <title>KojaJob</title>
 
   <style>
-
     * {
       box-sizing: border-box;
       font-family: Arial, sans-serif;
@@ -83,10 +82,12 @@
     .card h3 {
       margin-top: 0;
       margin-bottom: 10px;
+      font-size: 20px;
     }
 
     .card p {
       color: #666;
+      margin: 8px 0;
     }
 
     .buttons {
@@ -133,7 +134,6 @@
       color: #777;
       font-size: 14px;
     }
-
   </style>
 </head>
 
@@ -142,26 +142,18 @@
 <div class="app">
 
   <header>
-
     <h1>KojaJob</h1>
-
-    <p>
-      Trouvez un professionnel près de chez vous
-    </p>
-
+    <p>Trouvez un professionnel près de chez vous</p>
   </header>
-
 
   <div class="content">
 
     <a
       href="#"
       class="professional-button"
-      onclick="alert('La création de profil professionnel sera disponible très bientôt.'); return false;"
-    >
+      onclick="alert('La création de profil professionnel sera disponible très bientôt.'); return false;">
       👤 Je suis un professionnel
     </a>
-
 
     <input
       id="search"
@@ -170,22 +162,17 @@
       placeholder="Que recherchez-vous ?"
     >
 
-
     <div class="title">
       Professionnels disponibles
     </div>
 
-
     <div id="professionals">
-
       <div class="message">
         Chargement des professionnels...
       </div>
-
     </div>
 
   </div>
-
 
   <footer>
     © 2026 KojaJob
@@ -203,7 +190,6 @@
   import {
     initializeApp
   } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-
 
   import {
     getFirestore,
@@ -224,9 +210,9 @@
 
     messagingSenderId: "982386680439",
 
-    appId: "1:982386680439:web:5fd9da8d9ee1d4243b9c72",
+    appId: "1:982386680439:web:ad3098eefc9a7c8d3b9c72",
 
-    measurementId: "G-E2NZDGMD4L"
+    measurementId: "G-PPQRGYQMG9"
 
   };
 
@@ -251,14 +237,13 @@
 
 
   /* =========================
-     CHARGEMENT DE JEAN
+     CHARGER JEAN
   ========================= */
 
   async function chargerProfessionnels() {
 
     zone.innerHTML =
-      "<div class='message'>Chargement de Jean...</div>";
-
+      "<div class='message'>Chargement des professionnels...</div>";
 
     try {
 
@@ -268,7 +253,6 @@
         "h3rHA6yAsnmmUnwAvMm7"
       );
 
-
       const resultat =
         await getDoc(referenceJean);
 
@@ -277,17 +261,11 @@
 
         zone.innerHTML =
           "<div class='message error'>" +
-
-          "<strong>Jean n'a pas été trouvé.</strong>" +
-
-          "<br><br>" +
-
-          "Le document n'existe pas à cet emplacement." +
-
+          "<strong>Document introuvable</strong><br><br>" +
+          "Jean n'a pas été trouvé dans la collection Professionnels." +
           "</div>";
 
         return;
-
       }
 
 
@@ -296,12 +274,10 @@
 
 
       professionnels = [
-
         {
           id: resultat.id,
           ...jean
         }
-
       ];
 
 
@@ -310,18 +286,16 @@
 
     } catch (erreur) {
 
-      console.error(erreur);
+      console.error(
+        "Erreur Firebase :",
+        erreur
+      );
 
 
       zone.innerHTML =
         "<div class='message error'>" +
-
-        "<strong>Erreur Firebase</strong>" +
-
-        "<br><br>" +
-
+        "<strong>Erreur Firebase</strong><br><br>" +
         erreur.message +
-
         "</div>";
 
     }
@@ -330,7 +304,7 @@
 
 
   /* =========================
-     AFFICHAGE
+     AFFICHER
   ========================= */
 
   function afficher(liste) {
@@ -342,23 +316,19 @@
 
       zone.innerHTML =
         "<div class='message'>" +
-
         "Aucun professionnel trouvé." +
-
         "</div>";
 
       return;
-
     }
 
 
     liste.forEach(function(pro) {
 
-
       const nom =
         pro.nom ||
         pro.Nom ||
-        "Jean";
+        "Professionnel";
 
 
       const metier =
@@ -375,7 +345,7 @@
 
 
       const telephone =
-        pro.Téléphone ||
+        pro["Téléphone"] ||
         pro.telephone ||
         pro.Telephone ||
         "";
@@ -414,39 +384,31 @@
           ?
 
           `
-
           <div class="buttons">
 
             <a
               class="button call"
-              href="tel:+237${phone}"
-            >
+              href="tel:+237${phone}">
               📞 Appeler
             </a>
-
 
             <a
               class="button whatsapp"
               href="https://wa.me/237${phone}"
-              target="_blank"
-            >
+              target="_blank">
               WhatsApp
             </a>
 
           </div>
-
           `
 
           :
 
           `
-
           <div class="message">
             Téléphone non renseigné
           </div>
-
           `
-
         }
 
       `;
@@ -467,7 +429,6 @@
     "input",
     function() {
 
-
       const texte =
         recherche.value
           .toLowerCase()
@@ -476,7 +437,6 @@
 
       const resultats =
         professionnels.filter(function(pro) {
-
 
           const nom =
             String(
@@ -504,13 +464,9 @@
 
 
           return (
-
             nom.includes(texte) ||
-
             metier.includes(texte) ||
-
             ville.includes(texte)
-
           );
 
         });
@@ -523,7 +479,7 @@
 
 
   /* =========================
-     DEMARRAGE
+     DÉMARRAGE
   ========================= */
 
   chargerProfessionnels();
