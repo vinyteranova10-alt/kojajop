@@ -80,10 +80,12 @@
 
     .card h3 {
       margin-top: 0;
+      margin-bottom: 10px;
     }
 
     .card p {
       color: #666;
+      margin: 8px 0;
     }
 
     .buttons {
@@ -115,6 +117,13 @@
       text-align: center;
       padding: 20px;
       color: #777;
+    }
+
+    .error {
+      color: #b91c1c;
+      background: #fee2e2;
+      border-radius: 10px;
+      padding: 15px;
     }
 
     footer {
@@ -154,7 +163,9 @@
     <div class="title">Professionnels disponibles</div>
 
     <div id="professionals">
-      <div class="message">Chargement des professionnels...</div>
+      <div class="message">
+        Chargement des professionnels...
+      </div>
     </div>
 
   </div>
@@ -165,7 +176,12 @@
 
 </div>
 
+
 <script type="module">
+
+  /* =========================
+     FIREBASE
+  ========================= */
 
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
@@ -192,6 +208,11 @@
 
   const db = getFirestore(app);
 
+
+  /* =========================
+     ELEMENTS
+  ========================= */
+
   const zone =
     document.getElementById("professionals");
 
@@ -202,53 +223,108 @@
   let professionnels = [];
 
 
+  /* =========================
+     CHARGER LES PROFESSIONNELS
+  ========================= */
+
   async function chargerProfessionnels() {
+
+    zone.innerHTML =
+      "<div class='message'>Connexion à KojaJob...</div>";
 
     try {
 
+      const collectionProfessionnels =
+        collection(db, "Professionnels");
+
       const resultat =
-        await getDocs(
-          collection(db, "Professionnels")
-        );
-zone.innerHTML = "<div class='message'>Documents reçus : " + resultat.size + "</div>";
+        await getDocs(collectionProfessionnels);
+
+
+      console.log(
+        "Nombre de documents reçus :",
+        resultat.size
+      );
+
+
       professionnels = [];
 
-      resultat.forEach((document) => {
+
+      resultat.forEach((documentFirebase) => {
+
+        const donnees =
+          documentFirebase.data();
+
+
+        console.log(
+          "Document professionnel :",
+          documentFirebase.id,
+          donnees
+        );
+
 
         professionnels.push({
-          id: document.id,
-          ...document.data()
+
+          id: documentFirebase.id,
+
+          ...donnees
+
         });
 
       });
 
+
+      if (resultat.size === 0) {
+
+        zone.innerHTML = `
+          <div class="message">
+            Aucun professionnel n'est encore enregistré.
+          </div>
+        `;
+
+        return;
+      }
+
+
       afficher(professionnels);
-console.log("Nombre de professionnels :", professionnels.length);
+
+
     } catch (erreur) {
 
-      console.error(erreur);
+      console.error(
+        "Erreur Firebase :",
+        erreur
+      );
 
-      zone.innerHTML =
-        "<div class='message'>" +
-        "Erreur Firebase : " +
-        erreur.message +
-        "</div>";
+
+      zone.innerHTML = `
+        <div class="message error">
+          <strong>Erreur Firebase</strong><br><br>
+          ${erreur.message}
+        </div>
+      `;
 
     }
 
   }
 
 
+  /* =========================
+     AFFICHER LES PROFESSIONNELS
+  ========================= */
+
   function afficher(liste) {
 
     zone.innerHTML = "";
 
+
     if (liste.length === 0) {
 
-      zone.innerHTML =
-        "<div class='message'>" +
-        "Aucun professionnel trouvé." +
-        "</div>";
+      zone.innerHTML = `
+        <div class="message">
+          Aucun professionnel trouvé.
+        </div>
+      `;
 
       return;
     }
@@ -256,21 +332,57 @@ console.log("Nombre de professionnels :", professionnels.length);
 
     liste.forEach((pro) => {
 
+
+      /* NOM */
+
       const nom =
-        pro.nom || "Professionnel";
+        pro.nom ||
+        pro.Nom ||
+        pro.name ||
+        pro.Name ||
+        "Professionnel";
+
+
+      /* METIER */
 
       const metier =
-        pro.Metier || pro.metier || "";
+        pro.Metier ||
+        pro.metier ||
+        pro.métier ||
+        pro.Métier ||
+        pro.profession ||
+        pro.Profession ||
+        "";
+
+
+      /* VILLE */
 
       const ville =
-        pro.Ville || pro.ville || "";
+        pro.Ville ||
+        pro.ville ||
+        pro.city ||
+        pro.City ||
+        "";
+
+
+      /* TELEPHONE */
 
       const telephone =
-        pro.Téléphone || pro.telephone || "";
+        pro.Téléphone ||
+        pro.telephone ||
+        pro.Telephone ||
+        pro.phone ||
+        pro.Phone ||
+        "";
+
 
       const phone =
-        String(telephone).replace(/\s/g, "");
+        String(telephone)
+          .replace(/\s/g, "")
+          .replace(/\+/g, "");
 
+
+      /* CARTE */
 
       const carte =
         document.createElement("div");
@@ -282,24 +394,38 @@ console.log("Nombre de professionnels :", professionnels.length);
 
         <h3>${nom}</h3>
 
-        <p>🔧 ${metier}</p>
+        <p>
+          🔧 ${metier || "Métier non renseigné"}
+        </p>
 
-        <p>📍 ${ville}</p>
+        <p>
+          📍 ${ville || "Ville non renseignée"}
+        </p>
 
         <div class="buttons">
 
-          <a
-            class="button call"
-            href="tel:+237${phone}">
-            Appeler
-          </a>
+          ${
+            phone
+              ? `
+                <a
+                  class="button call"
+                  href="tel:+237${phone}">
+                  📞 Appeler
+                </a>
 
-          <a
-            class="button whatsapp"
-            href="https://wa.me/237${phone}"
-            target="_blank">
-            WhatsApp
-          </a>
+                <a
+                  class="button whatsapp"
+                  href="https://wa.me/237${phone}"
+                  target="_blank">
+                  WhatsApp
+                </a>
+              `
+              : `
+                <div class="message">
+                  Téléphone non renseigné
+                </div>
+              `
+          }
 
         </div>
 
@@ -313,9 +439,14 @@ console.log("Nombre de professionnels :", professionnels.length);
   }
 
 
+  /* =========================
+     RECHERCHE
+  ========================= */
+
   recherche.addEventListener(
     "input",
     function() {
+
 
       const texte =
         recherche.value
@@ -323,32 +454,62 @@ console.log("Nombre de professionnels :", professionnels.length);
           .trim();
 
 
+      if (texte === "") {
+
+        afficher(professionnels);
+
+        return;
+
+      }
+
+
       const resultats =
         professionnels.filter((pro) => {
 
+
           const nom =
-            String(pro.nom || "")
-              .toLowerCase();
+            String(
+              pro.nom ||
+              pro.Nom ||
+              pro.name ||
+              pro.Name ||
+              ""
+            )
+            .toLowerCase();
+
 
           const metier =
             String(
               pro.Metier ||
               pro.metier ||
+              pro.métier ||
+              pro.Métier ||
+              pro.profession ||
+              pro.Profession ||
               ""
-            ).toLowerCase();
+            )
+            .toLowerCase();
+
 
           const ville =
             String(
               pro.Ville ||
               pro.ville ||
+              pro.city ||
+              pro.City ||
               ""
-            ).toLowerCase();
+            )
+            .toLowerCase();
 
 
           return (
+
             nom.includes(texte) ||
+
             metier.includes(texte) ||
+
             ville.includes(texte)
+
           );
 
         });
@@ -357,8 +518,13 @@ console.log("Nombre de professionnels :", professionnels.length);
       afficher(resultats);
 
     }
+
   );
 
+
+  /* =========================
+     LANCEMENT
+  ========================= */
 
   chargerProfessionnels();
 
