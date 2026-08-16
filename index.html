@@ -80,12 +80,10 @@
 
     .card h3 {
       margin-top: 0;
-      margin-bottom: 10px;
     }
 
     .card p {
       color: #666;
-      margin: 8px 0;
     }
 
     .buttons {
@@ -160,7 +158,9 @@
       placeholder="Que recherchez-vous ?"
     >
 
-    <div class="title">Professionnels disponibles</div>
+    <div class="title">
+      Professionnels disponibles
+    </div>
 
     <div id="professionals">
       <div class="message">
@@ -179,10 +179,6 @@
 
 <script type="module">
 
-  /* =========================
-     FIREBASE
-  ========================= */
-
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
@@ -194,24 +190,30 @@
 
 
   const firebaseConfig = {
+
     apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
+
     authDomain: "kojajop.firebaseapp.com",
+
     projectId: "kojajop",
+
     storageBucket: "kojajop.firebasestorage.app",
+
     messagingSenderId: "982386680439",
+
     appId: "1:982386680439:web:5fd9da8d9ee1d4243b9c72",
+
     measurementId: "G-E2NZDGMD4L"
+
   };
 
 
-  const app = initializeApp(firebaseConfig);
+  const app =
+    initializeApp(firebaseConfig);
 
-  const db = getFirestore(app);
+  const db =
+    getFirestore(app);
 
-
-  /* =========================
-     ELEMENTS
-  ========================= */
 
   const zone =
     document.getElementById("professionals");
@@ -223,55 +225,44 @@
   let professionnels = [];
 
 
-  /* =========================
-     CHARGER LES PROFESSIONNELS
-  ========================= */
-
   async function chargerProfessionnels() {
 
     zone.innerHTML =
-      "<div class='message'>Connexion à KojaJob...</div>";
+      "<div class='message'>Chargement...</div>";
+
 
     try {
-const documentJean =
-  doc(db, "Professionnels", "h3rHA6yAsnmmUnwAvMm7");
 
-const resultat =
-  await getDoc(documentJean);
-    ;
-alert("Firebase a trouvé " + resultat.size + " professionnel(s)");
+      const resultat =
+        await getDocs(
+          collection(db, "Professionnels")
+        );
+
 
       console.log(
-        "Nombre de documents reçus :",
+        "Documents trouvés :",
         resultat.size
       );
 
-professionnels = [];
 
-if (resultat.exists()) {
-
-  professionnels.push({
-
-    id: resultat.id,
-
-    ...resultat.data()
-
-  });
-
-}
- 
+      professionnels = [];
 
 
-      if (resultat.size === 0) {
+      resultat.forEach((documentFirebase) => {
 
-        zone.innerHTML = `
-          <div class="message">
-            Aucun professionnel n'est encore enregistré.
-          </div>
-        `;
+        const donnees =
+          documentFirebase.data();
 
-        return;
-      }
+
+        professionnels.push({
+
+          id: documentFirebase.id,
+
+          ...donnees
+
+        });
+
+      });
 
 
       afficher(professionnels);
@@ -279,27 +270,19 @@ if (resultat.exists()) {
 
     } catch (erreur) {
 
-      console.error(
-        "Erreur Firebase :",
-        erreur
-      );
+      console.error(erreur);
 
 
-      zone.innerHTML = `
-        <div class="message error">
-          <strong>Erreur Firebase</strong><br><br>
-          ${erreur.message}
-        </div>
-      `;
+      zone.innerHTML =
+        "<div class='message error'>" +
+        "<strong>Erreur Firebase</strong><br><br>" +
+        erreur.message +
+        "</div>";
 
     }
 
   }
 
-
-  /* =========================
-     AFFICHER LES PROFESSIONNELS
-  ========================= */
 
   function afficher(liste) {
 
@@ -308,59 +291,41 @@ if (resultat.exists()) {
 
     if (liste.length === 0) {
 
-      zone.innerHTML = `
-        <div class="message">
-          Aucun professionnel trouvé.
-        </div>
-      `;
+      zone.innerHTML =
+        "<div class='message'>" +
+        "Aucun professionnel trouvé." +
+        "</div>";
 
       return;
+
     }
 
 
     liste.forEach((pro) => {
 
-
-      /* NOM */
-
       const nom =
         pro.nom ||
         pro.Nom ||
-        pro.name ||
-        pro.Name ||
         "Professionnel";
 
-
-      /* METIER */
 
       const metier =
         pro.Metier ||
         pro.metier ||
         pro.métier ||
-        pro.Métier ||
-        pro.profession ||
-        pro.Profession ||
         "";
 
-
-      /* VILLE */
 
       const ville =
         pro.Ville ||
         pro.ville ||
-        pro.city ||
-        pro.City ||
         "";
 
-
-      /* TELEPHONE */
 
       const telephone =
         pro.Téléphone ||
         pro.telephone ||
         pro.Telephone ||
-        pro.phone ||
-        pro.Phone ||
         "";
 
 
@@ -370,10 +335,9 @@ if (resultat.exists()) {
           .replace(/\+/g, "");
 
 
-      /* CARTE */
-
       const carte =
         document.createElement("div");
+
 
       carte.className = "card";
 
@@ -394,25 +358,27 @@ if (resultat.exists()) {
 
           ${
             phone
-              ? `
-                <a
-                  class="button call"
-                  href="tel:+237${phone}">
-                  📞 Appeler
-                </a>
+            ?
+            `
+              <a
+                class="button call"
+                href="tel:+237${phone}">
+                📞 Appeler
+              </a>
 
-                <a
-                  class="button whatsapp"
-                  href="https://wa.me/237${phone}"
-                  target="_blank">
-                  WhatsApp
-                </a>
-              `
-              : `
-                <div class="message">
-                  Téléphone non renseigné
-                </div>
-              `
+              <a
+                class="button whatsapp"
+                href="https://wa.me/237${phone}"
+                target="_blank">
+                WhatsApp
+              </a>
+            `
+            :
+            `
+              <div class="message">
+                Téléphone non renseigné
+              </div>
+            `
           }
 
         </div>
@@ -427,14 +393,9 @@ if (resultat.exists()) {
   }
 
 
-  /* =========================
-     RECHERCHE
-  ========================= */
-
   recherche.addEventListener(
     "input",
     function() {
-
 
       const texte =
         recherche.value
@@ -442,28 +403,15 @@ if (resultat.exists()) {
           .trim();
 
 
-      if (texte === "") {
-
-        afficher(professionnels);
-
-        return;
-
-      }
-
-
       const resultats =
         professionnels.filter((pro) => {
-
 
           const nom =
             String(
               pro.nom ||
               pro.Nom ||
-              pro.name ||
-              pro.Name ||
               ""
-            )
-            .toLowerCase();
+            ).toLowerCase();
 
 
           const metier =
@@ -471,23 +419,16 @@ if (resultat.exists()) {
               pro.Metier ||
               pro.metier ||
               pro.métier ||
-              pro.Métier ||
-              pro.profession ||
-              pro.Profession ||
               ""
-            )
-            .toLowerCase();
+            ).toLowerCase();
 
 
           const ville =
             String(
               pro.Ville ||
               pro.ville ||
-              pro.city ||
-              pro.City ||
               ""
-            )
-            .toLowerCase();
+            ).toLowerCase();
 
 
           return (
@@ -506,13 +447,8 @@ if (resultat.exists()) {
       afficher(resultats);
 
     }
-
   );
 
-
-  /* =========================
-     LANCEMENT
-  ========================= */
 
   chargerProfessionnels();
 
