@@ -44,19 +44,6 @@
       padding: 20px;
     }
 
-    .professional-button {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      margin-bottom: 20px;
-      background: #111827;
-      color: white;
-      border-radius: 10px;
-      text-align: center;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
     .search {
       width: 100%;
       padding: 15px;
@@ -81,13 +68,10 @@
 
     .card h3 {
       margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 20px;
     }
 
     .card p {
       color: #666;
-      margin: 8px 0;
     }
 
     .buttons {
@@ -128,6 +112,16 @@
       padding: 15px;
     }
 
+    .info {
+      color: #1d4ed8;
+      background: #dbeafe;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
     footer {
       text-align: center;
       padding: 25px;
@@ -148,13 +142,6 @@
 
   <div class="content">
 
-    <a
-      href="#"
-      class="professional-button"
-      onclick="alert('La création de profil professionnel sera disponible très bientôt.'); return false;">
-      👤 Je suis un professionnel
-    </a>
-
     <input
       id="search"
       class="search"
@@ -166,9 +153,11 @@
       Professionnels disponibles
     </div>
 
+    <div id="diagnostic"></div>
+
     <div id="professionals">
       <div class="message">
-        Chargement des professionnels...
+        Connexion à Firebase...
       </div>
     </div>
 
@@ -183,10 +172,6 @@
 
 <script type="module">
 
-  /* =========================
-     FIREBASE
-  ========================= */
-
   import {
     initializeApp
   } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
@@ -197,6 +182,10 @@
     getDoc
   } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
+
+  /* =========================
+     CONFIGURATION FIREBASE
+  ========================= */
 
   const firebaseConfig = {
 
@@ -217,272 +206,174 @@
   };
 
 
+  /* =========================
+     INITIALISATION
+  ========================= */
+
   const app = initializeApp(firebaseConfig);
 
   const db = getFirestore(app);
 
 
-  /* =========================
-     ELEMENTS
-  ========================= */
-
   const zone =
     document.getElementById("professionals");
 
-  const recherche =
-    document.getElementById("search");
-
-
-  let professionnels = [];
+  const diagnostic =
+    document.getElementById("diagnostic");
 
 
   /* =========================
-     CHARGER JEAN
+     DIAGNOSTIC
   ========================= */
 
-  async function chargerProfessionnels() {
+  diagnostic.innerHTML = `
 
-    zone.innerHTML =
-      "<div class='message'>Chargement des professionnels...</div>";
+    <div class="info">
+
+      <strong>Connexion KojaJob</strong><br><br>
+
+      Projet Firebase : ${firebaseConfig.projectId}<br>
+
+      Base : (default)<br>
+
+      Collection : Professionnels<br>
+
+      Document : h3rHA6yAsnmmUnwAvMm7
+
+    </div>
+
+  `;
+
+
+  /* =========================
+     TEST DE JEAN
+  ========================= */
+
+  async function testerJean() {
 
     try {
 
-      const referenceJean = doc(
+      zone.innerHTML =
+        "<div class='message'>" +
+        "Recherche de Jean dans Firebase..." +
+        "</div>";
+
+
+      const jeanReference = doc(
         db,
         "Professionnels",
         "h3rHA6yAsnmmUnwAvMm7"
       );
 
-      const resultat =
-        await getDoc(referenceJean);
+
+      const jeanDocument =
+        await getDoc(jeanReference);
 
 
-      if (!resultat.exists()) {
+      if (jeanDocument.exists()) {
 
-        zone.innerHTML =
-          "<div class='message error'>" +
-          "<strong>Document introuvable</strong><br><br>" +
-          "Jean n'a pas été trouvé dans la collection Professionnels." +
-          "</div>";
+        const jean =
+          jeanDocument.data();
+
+
+        zone.innerHTML = `
+
+          <div class="card">
+
+            <h3>
+              ${jean.nom || "Jean"}
+            </h3>
+
+            <p>
+              🔧 ${jean.Metier || "Métier non renseigné"}
+            </p>
+
+            <p>
+              📍 ${jean.Ville || "Ville non renseignée"}
+            </p>
+
+            <p>
+              📞 ${jean["Téléphone"] || "Téléphone non renseigné"}
+            </p>
+
+            <div class="buttons">
+
+              <a
+                class="button call"
+                href="tel:+237${jean["Téléphone"] || ""}">
+                📞 Appeler
+              </a>
+
+              <a
+                class="button whatsapp"
+                href="https://wa.me/237${jean["Téléphone"] || ""}"
+                target="_blank">
+                WhatsApp
+              </a>
+
+            </div>
+
+          </div>
+
+        `;
 
         return;
       }
 
 
-      const jean =
-        resultat.data();
+      zone.innerHTML = `
 
+        <div class="message error">
 
-      professionnels = [
-        {
-          id: resultat.id,
-          ...jean
-        }
-      ];
+          <strong>Firebase répond, mais le document est introuvable.</strong>
 
+          <br><br>
 
-      afficher(professionnels);
+          Chemin recherché :
 
+          <br><br>
 
-    } catch (erreur) {
+          <strong>
+            Professionnels /
+            h3rHA6yAsnmmUnwAvMm7
+          </strong>
 
-      console.error(
-        "Erreur Firebase :",
-        erreur
-      );
+          <br><br>
 
+          Projet utilisé :
 
-      zone.innerHTML =
-        "<div class='message error'>" +
-        "<strong>Erreur Firebase</strong><br><br>" +
-        erreur.message +
-        "</div>";
+          <strong>kojajop</strong>
 
-    }
-
-  }
-
-
-  /* =========================
-     AFFICHER
-  ========================= */
-
-  function afficher(liste) {
-
-    zone.innerHTML = "";
-
-
-    if (liste.length === 0) {
-
-      zone.innerHTML =
-        "<div class='message'>" +
-        "Aucun professionnel trouvé." +
-        "</div>";
-
-      return;
-    }
-
-
-    liste.forEach(function(pro) {
-
-      const nom =
-        pro.nom ||
-        pro.Nom ||
-        "Professionnel";
-
-
-      const metier =
-        pro.Metier ||
-        pro.metier ||
-        pro.métier ||
-        "Métier non renseigné";
-
-
-      const ville =
-        pro.Ville ||
-        pro.ville ||
-        "Ville non renseignée";
-
-
-      const telephone =
-        pro["Téléphone"] ||
-        pro.telephone ||
-        pro.Telephone ||
-        "";
-
-
-      const phone =
-        String(telephone)
-          .replace(/\s/g, "")
-          .replace(/^\+237/, "")
-          .replace(/^237/, "");
-
-
-      const carte =
-        document.createElement("div");
-
-
-      carte.className = "card";
-
-
-      carte.innerHTML = `
-
-        <h3>
-          ${nom}
-        </h3>
-
-        <p>
-          🔧 ${metier}
-        </p>
-
-        <p>
-          📍 ${ville}
-        </p>
-
-        ${
-          phone
-          ?
-
-          `
-          <div class="buttons">
-
-            <a
-              class="button call"
-              href="tel:+237${phone}">
-              📞 Appeler
-            </a>
-
-            <a
-              class="button whatsapp"
-              href="https://wa.me/237${phone}"
-              target="_blank">
-              WhatsApp
-            </a>
-
-          </div>
-          `
-
-          :
-
-          `
-          <div class="message">
-            Téléphone non renseigné
-          </div>
-          `
-        }
+        </div>
 
       `;
 
 
-      zone.appendChild(carte);
+    } catch (erreur) {
 
-    });
+      console.error(erreur);
+
+
+      zone.innerHTML = `
+
+        <div class="message error">
+
+          <strong>Erreur de connexion Firebase</strong>
+
+          <br><br>
+
+          ${erreur.message}
+
+        </div>
+
+      `;
+
+    }
 
   }
 
 
-  /* =========================
-     RECHERCHE
-  ========================= */
-
-  recherche.addEventListener(
-    "input",
-    function() {
-
-      const texte =
-        recherche.value
-          .toLowerCase()
-          .trim();
-
-
-      const resultats =
-        professionnels.filter(function(pro) {
-
-          const nom =
-            String(
-              pro.nom ||
-              pro.Nom ||
-              ""
-            ).toLowerCase();
-
-
-          const metier =
-            String(
-              pro.Metier ||
-              pro.metier ||
-              pro.métier ||
-              ""
-            ).toLowerCase();
-
-
-          const ville =
-            String(
-              pro.Ville ||
-              pro.ville ||
-              ""
-            ).toLowerCase();
-
-
-          return (
-            nom.includes(texte) ||
-            metier.includes(texte) ||
-            ville.includes(texte)
-          );
-
-        });
-
-
-      afficher(resultats);
-
-    }
-  );
-
-
-  /* =========================
-     DÉMARRAGE
-  ========================= */
-
-  chargerProfessionnels();
+  testerJean();
 
 </script>
 
