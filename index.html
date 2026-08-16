@@ -233,12 +233,12 @@
       "<div class='message'>Connexion à KojaJob...</div>";
 
     try {
+const documentJean =
+  doc(db, "Professionnels", "h3rHA6yAsnmmUnwAvMm7");
 
-      const collectionProfessionnels =
-        collection(db, "Professionnels");
-
-      const resultat =
-        await getDocs(collectionProfessionnels);
+const resultat =
+  await getDoc(documentJean);
+    ;
 alert("Firebase a trouvé " + resultat.size + " professionnel(s)");
 
       console.log(
@@ -246,32 +246,20 @@ alert("Firebase a trouvé " + resultat.size + " professionnel(s)");
         resultat.size
       );
 
+professionnels = [];
 
-      professionnels = [];
+if (resultat.exists()) {
 
+  professionnels.push({
 
-      resultat.forEach((documentFirebase) => {
+    id: resultat.id,
 
-        const donnees =
-          documentFirebase.data();
+    ...resultat.data()
 
+  });
 
-        console.log(
-          "Document professionnel :",
-          documentFirebase.id,
-          donnees
-        );
-
-
-        professionnels.push({
-
-          id: documentFirebase.id,
-
-          ...donnees
-
-        });
-
-      });
+}
+ 
 
 
       if (resultat.size === 0) {
