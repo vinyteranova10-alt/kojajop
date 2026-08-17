@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>KojaJob</title>
 
   <style>
@@ -81,10 +80,12 @@
 
     .card h3 {
       margin-top: 0;
+      margin-bottom: 10px;
     }
 
     .card p {
       color: #666;
+      margin: 8px 0;
     }
 
     .buttons {
@@ -123,6 +124,15 @@
       background: #fee2e2;
       border-radius: 10px;
       padding: 15px;
+    }
+
+    .success {
+      color: #166534;
+      background: #dcfce7;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 15px;
+      text-align: center;
     }
 
     footer {
@@ -178,10 +188,6 @@
 </div>
 
 
-<!-- ============================= -->
-<!-- JAVASCRIPT FIREBASE -->
-<!-- ============================= -->
-
 <script type="module">
 
   import { initializeApp }
@@ -195,9 +201,9 @@
   from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 
-  /* =============================
-     CONFIGURATION FIREBASE
-  ============================= */
+  /* =========================
+     FIREBASE
+  ========================= */
 
   const firebaseConfig = {
     apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
@@ -210,18 +216,14 @@
   };
 
 
-  /* =============================
-     INITIALISATION FIREBASE
-  ============================= */
-
   const app = initializeApp(firebaseConfig);
 
   const db = getFirestore(app);
 
 
-  /* =============================
-     ELEMENTS DE LA PAGE
-  ============================= */
+  /* =========================
+     ELEMENTS
+  ========================= */
 
   const zone =
     document.getElementById("professionals");
@@ -229,49 +231,32 @@
   const search =
     document.getElementById("search");
 
-
   let professionnels = [];
 
 
-  /* =============================
-     CHARGER LES PROFESSIONNELS
-  ============================= */
+  /* =========================
+     CHARGEMENT FIRESTORE
+  ========================= */
 
   async function chargerProfessionnels() {
 
     zone.innerHTML = `
       <div class="message">
-        Chargement des professionnels...
+        Connexion à KojaJob...
       </div>
     `;
 
     try {
 
-      console.log(
-        "Connexion à Firebase..."
-      );
-
-
       const reference =
-        collection(
-          db,
-          "Professionnels"
-        );
+        collection(db, "Professionnels");
 
-
-const resultat = await getDocs(reference);
-
-zone.innerHTML = `
-  <div class="message">
-    Firebase a trouvé <strong>${resultat.size}</strong> professionnel(s).
-  </div>
-`;
-
-console.log("DOCUMENTS TROUVÉS :", resultat.size);
+      const resultat =
+        await getDocs(reference);
 
 
       console.log(
-        "Nombre de professionnels :",
+        "Nombre de documents :",
         resultat.size
       );
 
@@ -284,9 +269,8 @@ console.log("DOCUMENTS TROUVÉS :", resultat.size);
         const donnees =
           documentFirebase.data();
 
-
         console.log(
-          "Professionnel trouvé :",
+          "Document :",
           documentFirebase.id,
           donnees
         );
@@ -303,6 +287,22 @@ console.log("DOCUMENTS TROUVÉS :", resultat.size);
       });
 
 
+      if (professionnels.length === 0) {
+
+        zone.innerHTML = `
+          <div class="message error">
+            <strong>Aucun professionnel trouvé.</strong>
+            <br><br>
+            Firebase ne renvoie aucun document
+            dans la collection
+            <strong>Professionnels</strong>.
+          </div>
+        `;
+
+        return;
+      }
+
+
       afficher(professionnels);
 
     }
@@ -316,19 +316,15 @@ console.log("DOCUMENTS TROUVÉS :", resultat.size);
 
 
       zone.innerHTML = `
-
         <div class="message error">
 
-          <strong>
-            Erreur Firebase
-          </strong>
+          <strong>Erreur Firebase</strong>
 
           <br><br>
 
           ${erreur.message}
 
         </div>
-
       `;
 
     }
@@ -336,89 +332,71 @@ console.log("DOCUMENTS TROUVÉS :", resultat.size);
   }
 
 
-  /* =============================
-     AFFICHER LES PROFESSIONNELS
-  ============================= */
+  /* =========================
+     AFFICHAGE
+  ========================= */
 
   function afficher(liste) {
 
-    if (
-      !liste ||
-      liste.length === 0
-    ) {
+    zone.innerHTML = "";
+
+
+    if (!liste || liste.length === 0) {
 
       zone.innerHTML = `
-
         <div class="message">
-
           Aucun professionnel trouvé.
-
         </div>
-
       `;
 
       return;
-
     }
-
-
-    zone.innerHTML = "";
 
 
     liste.forEach((pro) => {
 
 
       const nom =
-
-        pro.nom ||
-
         pro.Nom ||
-
+        pro.nom ||
+        pro.name ||
+        pro.Name ||
         "Professionnel";
 
 
       const metier =
-
         pro.Metier ||
-
         pro.metier ||
-
+        pro["Métier"] ||
+        pro.métier ||
         "Métier non renseigné";
 
 
       const ville =
-
         pro.Ville ||
-
         pro.ville ||
-
+        pro.city ||
+        pro.City ||
         "Ville non renseignée";
 
 
       const telephone =
-
         pro["Téléphone"] ||
-
         pro.telephone ||
-
         pro.Telephone ||
-
+        pro.phone ||
+        pro.Phone ||
         "";
 
 
       const phone =
-
         String(telephone)
-
           .replace(/\s/g, "")
-
           .replace("+237", "")
-
           .replace(/^237/, "");
 
 
       const carte =
-
         document.createElement("div");
 
 
@@ -441,27 +419,25 @@ console.log("DOCUMENTS TROUVÉS :", resultat.size);
 
         ${
           phone
-            ? `
+          ? `
+            <div class="buttons">
 
-              <div class="buttons">
+              <a
+                class="button call"
+                href="tel:+237${phone}">
+                📞 Appeler
+              </a>
 
-                <a
-                  class="button call"
-                  href="tel:+237${phone}">
-                  📞 Appeler
-                </a>
+              <a
+                class="button whatsapp"
+                href="https://wa.me/237${phone}"
+                target="_blank">
+                WhatsApp
+              </a>
 
-                <a
-                  class="button whatsapp"
-                  href="https://wa.me/237${phone}"
-                  target="_blank">
-                  WhatsApp
-                </a>
-
-              </div>
-
-            `
-            : ""
+            </div>
+          `
+          : ""
         }
 
       `;
@@ -474,80 +450,55 @@ console.log("DOCUMENTS TROUVÉS :", resultat.size);
   }
 
 
-  /* =============================
+  /* =========================
      RECHERCHE
-  ============================= */
+  ========================= */
 
   search.addEventListener(
     "input",
     () => {
 
       const texte =
-
         search.value
-
           .toLowerCase()
-
           .trim();
 
 
       const resultats =
-
-        professionnels.filter(
-          (pro) => {
+        professionnels.filter((pro) => {
 
 
-            const nom =
-
-              String(
-
-                pro.nom ||
-
-                pro.Nom ||
-
-                ""
-
-              ).toLowerCase();
+          const nom =
+            String(
+              pro.Nom ||
+              pro.nom ||
+              ""
+            ).toLowerCase();
 
 
-            const metier =
-
-              String(
-
-                pro.Metier ||
-
-                pro.metier ||
-
-                ""
-
-              ).toLowerCase();
+          const metier =
+            String(
+              pro.Metier ||
+              pro.metier ||
+              ""
+            ).toLowerCase();
 
 
-            const ville =
-
-              String(
-
-                pro.Ville ||
-
-                pro.ville ||
-
-                ""
-
-              ).toLowerCase();
+          const ville =
+            String(
+              pro.Ville ||
+              pro.ville ||
+              ""
+            ).toLowerCase();
 
 
-            return (
+          return (
+            nom.includes(texte) ||
+            metier.includes(texte) ||
+            ville.includes(texte)
+          );
 
-              nom.includes(texte) ||
-
-              metier.includes(texte) ||
-
-              ville.includes(texte)
-
-            );
-
-          }
-        );
+        });
 
 
       afficher(resultats);
@@ -556,9 +507,9 @@ console.log("DOCUMENTS TROUVÉS :", resultat.size);
   );
 
 
-  /* =============================
-     LANCEMENT
-  ============================= */
+  /* =========================
+     DÉMARRAGE
+  ========================= */
 
   chargerProfessionnels();
 
