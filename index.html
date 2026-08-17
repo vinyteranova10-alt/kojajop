@@ -192,13 +192,12 @@
 
   import { initializeApp }
   from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-
-  import {
-   getFirestore,
-collection,
-getDocsFromServer 
-  }
-  from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  getCountFromServer
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+ 
 
 
   /* =========================
@@ -219,7 +218,32 @@ getDocsFromServer
   const app = initializeApp(firebaseConfig);
 
   const db = getFirestore(app);
+async function testerFirebase() {
+  try {
+    const reference = collection(db, "Professionnels");
+    const resultat = await getCountFromServer(reference);
 
+    document.getElementById("professionals").innerHTML = `
+      <div class="message">
+        Firebase voit :
+        <strong>${resultat.data().count}</strong>
+        professionnel(s).
+      </div>
+    `;
+
+  } catch (erreur) {
+
+    document.getElementById("professionals").innerHTML = `
+      <div class="message error">
+        <strong>Erreur Firebase</strong>
+        <br><br>
+        ${erreur.message}
+      </div>
+    `;
+  }
+}
+
+testerFirebase();
 
   /* =========================
      ELEMENTS
