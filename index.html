@@ -443,6 +443,24 @@ chargerProfessionnels();
 
         return;
       }
+
+
+
+    } catch (erreur) {
+
+      console.error(erreur);
+
+      zone.innerHTML = `
+        <div class="message error">
+          <strong>Erreur Firebase</strong>
+          <br><br>
+          ${erreur.message}
+        </div>
+      `;
+
+    }
+
+  }
 const professionnelsRef = collection(db, "Professionnels");
 
 const resultat = await getDocs(professionnelsRef);
@@ -466,29 +484,9 @@ resultat.forEach((document) => {
   });
 });
 
-      const pro =
-        resultat.data();
+afficher(professionnels);
 
-
-      afficher(pro);
-
-
-    } catch (erreur) {
-
-      console.error(erreur);
-
-      zone.innerHTML = `
-        <div class="message error">
-          <strong>Erreur Firebase</strong>
-          <br><br>
-          ${erreur.message}
-        </div>
-      `;
-
-    }
-
-  }
-
+} catch (erreur) {
 
   function afficher(pro) {
 
