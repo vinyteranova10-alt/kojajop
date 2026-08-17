@@ -259,8 +259,15 @@
         );
 
 
-      const resultat =
-        await getDocs(reference);
+const resultat = await getDocs(reference);
+
+zone.innerHTML = `
+  <div class="message">
+    Firebase a trouvé <strong>${resultat.size}</strong> professionnel(s).
+  </div>
+`;
+
+console.log("DOCUMENTS TROUVÉS :", resultat.size);
 
 
       console.log(
