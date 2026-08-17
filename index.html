@@ -194,9 +194,9 @@
   from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
   import {
-    getFirestore,
-    collection,
-    getDocs
+   getFirestore,
+collection,
+getDocsFromServer 
   }
   from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
@@ -251,8 +251,7 @@
       const reference =
         collection(db, "Professionnels");
 
-      const resultat =
-        await getDocs(reference);
+      const resultat = await getDocsFromServer(reference);
 
 
       console.log(
