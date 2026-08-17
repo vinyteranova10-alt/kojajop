@@ -214,14 +214,14 @@ import {
     measurementId: "G-PPQRGYQMG9"
   };
 
-
+    const resultat = await getCountFromServer(reference
   const app = initializeApp(firebaseConfig);
 
   const db = getFirestore(app, "(default)");
 async function testerFirebase() {
   try {
     const reference = collection(db, "Professionnels");
-    const resultat = await getCountFromServer(reference);
+)
 
     document.getElementById("professionals").innerHTML = `
       <div class="message">
