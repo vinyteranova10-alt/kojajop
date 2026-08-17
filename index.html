@@ -179,6 +179,212 @@
 
 <script type="module">
 
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
+  authDomain: "kojajop.firebaseapp.com",
+  projectId: "kojajop",
+  storageBucket: "kojajop.firebasestorage.app",
+  messagingSenderId: "982386680439",
+  appId: "1:982386680439:web:ad3098eefc9a7c8d3b9c72",
+  measurementId: "G-PPQRGYQMG9"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const zone = document.getElementById("professionals");
+const search = document.getElementById("search");
+
+let professionnels = [];
+
+
+async function chargerProfessionnels() {
+
+  zone.innerHTML =
+    "<div class='message'>Chargement...</div>";
+
+  try {
+
+    const resultat = await getDocs(
+      collection(db, "Professionnels")
+    );
+
+    professionnels = [];
+
+    resultat.forEach((documentFirebase) => {
+
+      professionnels.push({
+        id: documentFirebase.id,
+        ...documentFirebase.data()
+      });
+
+    });
+
+    afficher(professionnels);
+
+  } catch (erreur) {
+
+    console.error(erreur);
+
+    zone.innerHTML = `
+      <div class="message error">
+        <strong>Erreur Firebase</strong><br><br>
+        ${erreur.message}
+      </div>
+    `;
+
+  }
+}
+
+
+function afficher(liste) {
+
+  if (liste.length === 0) {
+
+    zone.innerHTML = `
+      <div class="message">
+        Aucun professionnel trouvé.
+      </div>
+    `;
+
+    return;
+  }
+
+  zone.innerHTML = "";
+
+  liste.forEach((pro) => {
+
+    const nom =
+      pro.nom ||
+      pro.Nom ||
+      "Professionnel";
+
+    const metier =
+      pro.Metier ||
+      pro.metier ||
+      "Métier non renseigné";
+
+    const ville =
+      pro.Ville ||
+      pro.ville ||
+      "Ville non renseignée";
+
+    const telephone =
+      pro["Téléphone"] ||
+      pro.telephone ||
+      pro.Telephone ||
+      "";
+
+    const phone =
+      String(telephone)
+        .replace(/\s/g, "")
+        .replace("+237", "")
+        .replace(/^237/, "");
+
+
+    const carte =
+      document.createElement("div");
+
+    carte.className = "card";
+
+    carte.innerHTML = `
+
+      <h3>${nom}</h3>
+
+      <p>🔧 ${metier}</p>
+
+      <p>📍 ${ville}</p>
+
+      <div class="buttons">
+
+        ${
+          phone
+          ? `
+            <a
+              class="button call"
+              href="tel:+237${phone}">
+              📞 Appeler
+            </a>
+
+            <a
+              class="button whatsapp"
+              href="https://wa.me/237${phone}"
+              target="_blank">
+              WhatsApp
+            </a>
+          `
+          : ""
+        }
+
+      </div>
+
+    `;
+
+    zone.appendChild(carte);
+
+  });
+}
+
+
+search.addEventListener("input", () => {
+
+  const texte =
+    search.value
+      .toLowerCase()
+      .trim();
+
+  const resultats =
+    professionnels.filter((pro) => {
+
+      const nom =
+        String(
+          pro.nom ||
+          pro.Nom ||
+          ""
+        ).toLowerCase();
+
+      const metier =
+        String(
+          pro.Metier ||
+          pro.metier ||
+          ""
+        ).toLowerCase();
+
+      const ville =
+        String(
+          pro.Ville ||
+          pro.ville ||
+          ""
+        ).toLowerCase();
+
+      return (
+        nom.includes(texte) ||
+        metier.includes(texte) ||
+        ville.includes(texte)
+      );
+
+    });
+
+  afficher(resultats);
+
+});
+
+
+chargerProfessionnels();
+
+</script>
+
   import { initializeApp }
     from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
