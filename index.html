@@ -431,23 +431,7 @@ chargerProfessionnels();
     try {
 
       zone.innerHTML =
-        "<div class='message'>Recherche de Jean...</div>";
-
-
-      const reference = doc(
-        db,
-        "Professionnels",
-        "h3rHA6yAsnmmUnwAvMm7"
-      );
-
-
-      const resultat =
-        await getDoc(reference);
-
-
-      if (!resultat.exists()) {
-
-        zone.innerHTML = `
+        "<div class='message'>Recherche de Jean...</  zone.innerHTML = `
           <div class="message error">
             <strong>Document introuvable</strong><br><br>
             Firebase ne trouve pas :
@@ -459,7 +443,28 @@ chargerProfessionnels();
 
         return;
       }
+const professionnelsRef = collection(db, "Professionnels");
 
+const resultat = await getDocs(professionnelsRef);
+
+if (resultat.empty) {
+  zone.innerHTML = `
+    <div class="message error">
+      <strong>Aucun professionnel trouvé</strong><br><br>
+      Aucun professionnel n'est actuellement enregistré.
+    </div>
+  `;
+  return;
+}
+
+const professionnels = [];
+
+resultat.forEach((document) => {
+  professionnels.push({
+    id: document.id,
+    ...document.data()
+  });
+});
 
       const pro =
         resultat.data();
