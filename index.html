@@ -4,45 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KojaJob</title>
-
   <style>
     * {
       box-sizing: border-box;
       font-family: Arial, sans-serif;
     }
-
     body {
       margin: 0;
       background: #f5f7fa;
     }
-
     .app {
       max-width: 500px;
       min-height: 100vh;
       margin: auto;
       background: white;
     }
-
     header {
       background: #111827;
       color: white;
       text-align: center;
       padding: 35px 20px;
     }
-
     header h1 {
       margin: 0 0 10px;
       font-size: 34px;
     }
-
     header p {
       margin: 0;
     }
-
     .content {
       padding: 20px;
     }
-
     .professional-button {
       display: block;
       width: 100%;
@@ -55,7 +47,6 @@
       text-decoration: none;
       font-weight: bold;
     }
-
     .search {
       width: 100%;
       padding: 15px;
@@ -64,34 +55,28 @@
       font-size: 16px;
       margin-bottom: 20px;
     }
-
     .title {
       font-size: 22px;
       font-weight: bold;
       margin-bottom: 15px;
     }
-
     .card {
       border: 1px solid #e5e7eb;
       border-radius: 14px;
       padding: 18px;
       margin-bottom: 15px;
     }
-
     .card h3 {
       margin-top: 0;
     }
-
     .card p {
       color: #666;
     }
-
     .buttons {
       display: flex;
       gap: 10px;
       margin-top: 15px;
     }
-
     .button {
       flex: 1;
       padding: 12px;
@@ -100,30 +85,25 @@
       text-decoration: none;
       font-weight: bold;
     }
-
     .call {
       background: #111827;
       color: white;
     }
-
     .whatsapp {
       background: #25D366;
       color: white;
     }
-
     .message {
       text-align: center;
       padding: 20px;
       color: #777;
     }
-
     .error {
       color: #b91c1c;
       background: #fee2e2;
       border-radius: 10px;
       padding: 15px;
     }
-
     footer {
       text-align: center;
       padding: 25px;
@@ -132,63 +112,46 @@
     }
   </style>
 </head>
-
 <body>
-
 <div class="app">
-
   <header>
     <h1>KojaJob</h1>
     <p>Trouvez un professionnel près de chez vous</p>
   </header>
-
   <div class="content">
-
     <a
       href="#"
       class="professional-button"
       onclick="alert('La création de profil professionnel sera disponible très bientôt.'); return false;">
       👤 Je suis un professionnel
     </a>
-
     <input
       id="search"
       class="search"
       type="text"
       placeholder="Que recherchez-vous ?"
     >
-
     <div class="title">
       Professionnels disponibles
     </div>
-
     <div id="professionals">
       <div class="message">
         Chargement des professionnels...
       </div>
     </div>
-
   </div>
-
   <footer>
     © 2026 KojaJob
   </footer>
-
 </div>
-
-
 <script type="module">
-
 import { initializeApp }
 from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-
 import {
   getFirestore,
   collection,
   getDocs
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-
-
 const firebaseConfig = {
   apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
   authDomain: "kojajop.firebaseapp.com",
@@ -198,116 +161,91 @@ const firebaseConfig = {
   appId: "1:982386680439:web:ad3098eefc9a7c8d3b9c72",
   measurementId: "G-PPQRGYQMG9"
 };
-
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 const zone = document.getElementById("professionals");
 const search = document.getElementById("search");
-
 let professionnels = [];
-
-
 async function chargerProfessionnels() {
-
   zone.innerHTML =
-    "<div class='message'>Chargement...</div>";
-
+    "<div class='message'>Chargement des professionnels...</div>";
   try {
-
-    const resultat = await getDocs(
-      collection(db, "Professionnels")
+    const reference =
+      collection(db, "Professionnels");
+    const resultat =
+      await getDocs(reference);
+    console.log(
+      "Nombre de professionnels trouvés :",
+      resultat.size
     );
-
     professionnels = [];
-
     resultat.forEach((documentFirebase) => {
-
+      console.log(
+        "Professionnel trouvé :",
+        documentFirebase.id,
+        documentFirebase.data()
+      );
       professionnels.push({
         id: documentFirebase.id,
         ...documentFirebase.data()
       });
-
     });
-
     afficher(professionnels);
-
   } catch (erreur) {
-
-    console.error(erreur);
-
+    console.error(
+      "Erreur Firebase :",
+      erreur
+    );
     zone.innerHTML = `
       <div class="message error">
         <strong>Erreur Firebase</strong><br><br>
         ${erreur.message}
       </div>
     `;
-
   }
 }
-
-
 function afficher(liste) {
-
   if (liste.length === 0) {
-
     zone.innerHTML = `
       <div class="message">
         Aucun professionnel trouvé.
       </div>
     `;
-
     return;
   }
-
   zone.innerHTML = "";
-
   liste.forEach((pro) => {
-
     const nom =
       pro.nom ||
       pro.Nom ||
       "Professionnel";
-
     const metier =
       pro.Metier ||
       pro.metier ||
       "Métier non renseigné";
-
     const ville =
       pro.Ville ||
       pro.ville ||
       "Ville non renseignée";
-
     const telephone =
       pro["Téléphone"] ||
       pro.telephone ||
       pro.Telephone ||
       "";
-
     const phone =
       String(telephone)
         .replace(/\s/g, "")
         .replace("+237", "")
         .replace(/^237/, "");
-
-
     const carte =
       document.createElement("div");
-
-    carte.className = "card";
-
+    carte.className =
+      "card";
     carte.innerHTML = `
-
       <h3>${nom}</h3>
-
       <p>🔧 ${metier}</p>
-
       <p>📍 ${ville}</p>
-
       <div class="buttons">
-
         ${
           phone
           ? `
@@ -316,7 +254,6 @@ function afficher(liste) {
               href="tel:+237${phone}">
               📞 Appeler
             </a>
-
             <a
               class="button whatsapp"
               href="https://wa.me/237${phone}"
@@ -326,237 +263,48 @@ function afficher(liste) {
           `
           : ""
         }
-
       </div>
-
     `;
-
     zone.appendChild(carte);
-
   });
 }
-
-
-search.addEventListener("input", () => {
-
-  const texte =
-    search.value
-      .toLowerCase()
-      .trim();
-
-  const resultats =
-    professionnels.filter((pro) => {
-
-      const nom =
-        String(
-          pro.nom ||
-          pro.Nom ||
-          ""
-        ).toLowerCase();
-
-      const metier =
-        String(
-          pro.Metier ||
-          pro.metier ||
-          ""
-        ).toLowerCase();
-
-      const ville =
-        String(
-          pro.Ville ||
-          pro.ville ||
-          ""
-        ).toLowerCase();
-
-      return (
-        nom.includes(texte) ||
-        metier.includes(texte) ||
-        ville.includes(texte)
-      );
-
-    });
-
-  afficher(resultats);
-
-});
-
-
+search.addEventListener(
+  "input",
+  () => {
+    const texte =
+      search.value
+        .toLowerCase()
+        .trim();
+    const resultats =
+      professionnels.filter((pro) => {
+        const nom =
+          String(
+            pro.nom ||
+            pro.Nom ||
+            ""
+          ).toLowerCase();
+        const metier =
+          String(
+            pro.Metier ||
+            pro.metier ||
+            ""
+          ).toLowerCase();
+        const ville =
+          String(
+            pro.Ville ||
+            pro.ville ||
+            ""
+          ).toLowerCase();
+        return (
+          nom.includes(texte) ||
+          metier.includes(texte) ||
+          ville.includes(texte)
+        );
+      });
+    afficher(resultats);
+  }
+);
 chargerProfessionnels();
-
 </script>
-
-  import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-
-  import {
-    getFirestore,
-    doc,
-    getDoc
-  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
-
-
-  const firebaseConfig = {
-
-    apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
-
-    authDomain: "kojajop.firebaseapp.com",
-
-    projectId: "kojajop",
-
-    storageBucket: "kojajop.firebasestorage.app",
-
-    messagingSenderId: "982386680439",
-
-    appId: "1:982386680439:web:ad3098eefc9a7c8d3b9c72",
-
-    measurementId: "G-PPQRGYQMG9"
-
-  };
-
-
-  const app = initializeApp(firebaseConfig);
-
-  const db = getFirestore(app);
-
-
-  const zone =
-    document.getElementById("professionals");
-
-  const search =
-    document.getElementById("search");
-
-
-  async function chargerJean() {
-
-    try {
-
-      zone.innerHTML =
-        "<div class='message'>Recherche de Jean...</  zone.innerHTML = `
-          <div class="message error">
-            <strong>Document introuvable</strong><br><br>
-            Firebase ne trouve pas :
-            <br><br>
-            Professionnels /
-            h3rHA6yAsnmmUnwAvMm7
-          </div>
-        `;
-
-        return;
-      }
-
-
-
-    } catch (erreur) {
-
-      console.error(erreur);
-
-      zone.innerHTML = `
-        <div class="message error">
-          <strong>Erreur Firebase</strong>
-          <br><br>
-          ${erreur.message}
-        </div>
-      `;
-
-    }
-
-  }
-const professionnelsRef = collection(db, "Professionnels");
-
-const resultat = await getDocs(professionnelsRef);
-
-if (resultat.empty) {
-  zone.innerHTML = `
-    <div class="message error">
-      <strong>Aucun professionnel trouvé</strong><br><br>
-      Aucun professionnel n'est actuellement enregistré.
-    </div>
-  `;
-  return;
-}
-
-const professionnels = [];
-
-resultat.forEach((document) => {
-  professionnels.push({
-    id: document.id,
-    ...document.data()
-  });
-});
-
-afficher(professionnels);
-
-} catch (erreur) {
-
-  function afficher(pro) {
-
-    const nom =
-      pro.nom || "Jean";
-
-    const metier =
-      pro.Metier ||
-      pro.metier ||
-      "Métier non renseigné";
-
-    const ville =
-      pro.Ville ||
-      pro.ville ||
-      "Ville non renseignée";
-
-    const telephone =
-      pro["Téléphone"] ||
-      pro.telephone ||
-      "";
-
-
-    let phone =
-      String(telephone)
-        .replace(/\s/g, "")
-        .replace(/^237/, "")
-        .replace(/^\+237/, "");
-
-
-    zone.innerHTML = `
-
-      <div class="card">
-
-        <h3>${nom}</h3>
-
-        <p>
-          🔧 ${metier}
-        </p>
-
-        <p>
-          📍 ${ville}
-        </p>
-
-        <div class="buttons">
-
-          <a
-            class="button call"
-            href="tel:+237${phone}">
-            📞 Appeler
-          </a>
-
-          <a
-            class="button whatsapp"
-            href="https://wa.me/237${phone}"
-            target="_blank">
-            WhatsApp
-          </a>
-
-        </div>
-
-      </div>
-
-    `;
-
-  }
-
-
-  chargerJean();
-
-</script>
-
 </body>
 </html>
