@@ -35,8 +35,25 @@
       font-size: 34px;
     }
 
+    header p {
+      margin: 0;
+    }
+
     .content {
       padding: 20px;
+    }
+
+    .professional-button {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: #111827;
+      color: white;
+      border-radius: 10px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
     }
 
     .search {
@@ -103,14 +120,15 @@
     .error {
       color: #b91c1c;
       background: #fee2e2;
-      padding: 15px;
       border-radius: 10px;
+      padding: 15px;
     }
 
     footer {
       text-align: center;
       padding: 25px;
       color: #777;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -126,6 +144,13 @@
 
   <div class="content">
 
+    <a
+      href="#"
+      class="professional-button"
+      onclick="alert('La création de profil professionnel sera disponible très bientôt.'); return false;">
+      👤 Je suis un professionnel
+    </a>
+
     <input
       id="search"
       class="search"
@@ -139,7 +164,7 @@
 
     <div id="professionals">
       <div class="message">
-        Connexion...
+        Chargement des professionnels...
       </div>
     </div>
 
@@ -154,14 +179,13 @@
 
 <script type="module">
 
-  import {
-    initializeApp
-  } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
   import {
     getFirestore,
-    collection,
-    getDocs
+    doc,
+    getDoc
   } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 
@@ -188,178 +212,140 @@
 
   const db = getFirestore(app);
 
+
   const zone =
     document.getElementById("professionals");
 
   const search =
     document.getElementById("search");
 
-  let professionnels = [];
 
-
-  async function charger() {
+  async function chargerJean() {
 
     try {
 
-      const ref =
-        collection(db, "Professionnels");
+      zone.innerHTML =
+        "<div class='message'>Recherche de Jean...</div>";
+
+
+      const reference = doc(
+        db,
+        "Professionnels",
+        "h3rHA6yAsnmmUnwAvMm7"
+      );
+
 
       const resultat =
-        await getDocs(ref);
+        await getDoc(reference);
 
 
-      zone.innerHTML =
-        "<div class='message'>" +
-        "Firebase a trouvé " +
-        resultat.size +
-        " professionnel(s)." +
-        "</div>";
+      if (!resultat.exists()) {
+
+        zone.innerHTML = `
+          <div class="message error">
+            <strong>Document introuvable</strong><br><br>
+            Firebase ne trouve pas :
+            <br><br>
+            Professionnels /
+            h3rHA6yAsnmmUnwAvMm7
+          </div>
+        `;
+
+        return;
+      }
 
 
-      resultat.forEach((doc) => {
-
-        const data = doc.data();
-
-        professionnels.push(data);
-
-      });
+      const pro =
+        resultat.data();
 
 
-      afficher(professionnels);
+      afficher(pro);
 
 
-    } catch (error) {
+    } catch (erreur) {
 
-      zone.innerHTML =
-        "<div class='error'>" +
-        "<strong>Erreur :</strong><br><br>" +
-        error.message +
-        "</div>";
+      console.error(erreur);
+
+      zone.innerHTML = `
+        <div class="message error">
+          <strong>Erreur Firebase</strong>
+          <br><br>
+          ${erreur.message}
+        </div>
+      `;
 
     }
 
   }
 
 
-  function afficher(liste) {
+  function afficher(pro) {
 
-    if (liste.length === 0) {
+    const nom =
+      pro.nom || "Jean";
 
-      zone.innerHTML =
-        "<div class='message'>" +
-        "Firebase ne retourne aucun document." +
-        "</div>";
+    const metier =
+      pro.Metier ||
+      pro.metier ||
+      "Métier non renseigné";
 
-      return;
+    const ville =
+      pro.Ville ||
+      pro.ville ||
+      "Ville non renseignée";
 
-    }
-
-
-    zone.innerHTML = "";
-
-
-    liste.forEach((pro) => {
-
-      const nom =
-        pro.nom || "Professionnel";
-
-      const metier =
-        pro.Metier || "Métier non renseigné";
-
-      const ville =
-        pro.Ville || "Ville non renseignée";
-
-      const telephone =
-        pro["Téléphone"] || "";
+    const telephone =
+      pro["Téléphone"] ||
+      pro.telephone ||
+      "";
 
 
-      const card =
-        document.createElement("div");
+    let phone =
+      String(telephone)
+        .replace(/\s/g, "")
+        .replace(/^237/, "")
+        .replace(/^\+237/, "");
 
-      card.className = "card";
 
+    zone.innerHTML = `
 
-      card.innerHTML = `
+      <div class="card">
 
         <h3>${nom}</h3>
 
-        <p>🔧 ${metier}</p>
+        <p>
+          🔧 ${metier}
+        </p>
 
-        <p>📍 ${ville}</p>
+        <p>
+          📍 ${ville}
+        </p>
 
-        ${
-          telephone
-          ?
-          `
-          <div class="buttons">
+        <div class="buttons">
 
-            <a
-              class="button call"
-              href="tel:+237${telephone}">
-              📞 Appeler
-            </a>
+          <a
+            class="button call"
+            href="tel:+237${phone}">
+            📞 Appeler
+          </a>
 
-            <a
-              class="button whatsapp"
-              href="https://wa.me/237${telephone}"
-              target="_blank">
-              WhatsApp
-            </a>
+          <a
+            class="button whatsapp"
+            href="https://wa.me/237${phone}"
+            target="_blank">
+            WhatsApp
+          </a>
 
-          </div>
-          `
-          :
-          ""
-        }
+        </div>
 
-      `;
+      </div>
 
-
-      zone.appendChild(card);
-
-    });
+    `;
 
   }
 
 
-  search.addEventListener("input", () => {
-
-    const texte =
-      search.value.toLowerCase().trim();
-
-
-    const resultat =
-      professionnels.filter((pro) => {
-
-        return (
-
-          String(pro.nom || "")
-            .toLowerCase()
-            .includes(texte)
-
-          ||
-
-          String(pro.Metier || "")
-            .toLowerCase()
-            .includes(texte)
-
-          ||
-
-          String(pro.Ville || "")
-            .toLowerCase()
-            .includes(texte)
-
-        );
-
-      });
-
-
-    afficher(resultat);
-
-  });
-
-
-  charger();
+  chargerJean();
 
 </script>
 
