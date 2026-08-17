@@ -147,11 +147,60 @@ jj<!DOCTYPE html>
 <script type="module">
 import { initializeApp }
 from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+async function chargerProfessionnels() {
+
+  zone.innerHTML = `
+    <div class="message">
+      Recherche du professionnel...
+    </div>
+  `;
+
+  try {
+
+    const reference = doc(
+      db,
+      "Professionnels",
+      "h3rHA6yAsnmmUnwAvMm7"
+    );
+
+    const resultat = await getDoc(reference);
+
+    console.log("Document existe :", resultat.exists());
+    console.log("Données :", resultat.data());
+
+    if (!resultat.exists()) {
+
+      zone.innerHTML = `
+        <div class="message error">
+          Le document n'existe pas à cette adresse :
+          <br><br>
+          Professionnels / h3rHA6yAsnmmUnwAvMm7
+        </div>
+      `;
+
+      return;
+    }
+
+    professionnels = [{
+      id: resultat.id,
+      ...resultat.data()
+    }];
+
+    afficher(professionnels);
+
+  } catch (erreur) {
+
+    console.error("Erreur Firebase :", erreur);
+
+    zone.innerHTML = `
+      <div class="message error">
+        <strong>Erreur Firebase</strong>
+        <br><br>
+        ${erreur.message}
+      </div>
+    `;
+  }
+}
 const firebaseConfig = {
   apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
   authDomain: "kojajop.firebaseapp.com",
