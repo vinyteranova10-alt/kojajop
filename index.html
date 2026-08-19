@@ -166,10 +166,16 @@
         "Chargement des professionnels...";
 
 
-      const resultat =
-        await getDocs(
-          collection(db, "Professionnels")
-        );
+      const resultat = await getDocs(
+  collection(db, "Professionnels")
+);
+
+console.log("DOCUMENTS FIREBASE :", resultat.size);
+
+resultat.forEach((doc) => {
+  console.log("DOCUMENT :", doc.id);
+  console.log("DONNEES :", doc.data());
+});
 
 
       tousLesProfessionnels = [];
