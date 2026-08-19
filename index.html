@@ -129,7 +129,8 @@ const
     collection(db, "Professionnels")
   );
 
-console.log("Nombre de documents :", resultat.size);tousLesProfessionnels = [];
+console.log("Nombre de documents :", resultat.size)
+  ;tousLesProfessionnels = [];
       resultat.forEach((document) => {
         const data = document.data();
         tousLesProfessionnels.push({
