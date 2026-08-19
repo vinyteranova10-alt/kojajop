@@ -114,6 +114,7 @@
   const search = document.getElementById("search");
   let tousLesProfessionnels = [];
   // Charger les professionnels
+ 
   db.collection("Professionnels")
     .get()
     .then((snapshot) => {
@@ -124,7 +125,7 @@
           id: doc.id,
           ...data
         });
-      });
+      }); 
       console.log("Professionnels trouvés :", tousLesProfessionnels);
       if (tousLesProfessionnels.length === 0) {
         message.textContent = "Aucun professionnel trouvé.";
