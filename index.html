@@ -123,11 +123,13 @@
   async function chargerProfessionnels() {
     message.textContent = "Connexion à Firebase...";
     try {
+const       
       const resultat =
-        await getDocs(
-          collection(db, "Professionnels")
-        );
-      tousLesProfessionnels = [];
+  await getDocs(
+    collection(db, "Professionnels")
+  );
+
+console.log("Nombre de documents :", resultat.size);tousLesProfessionnels = [];
       resultat.forEach((document) => {
         const data = document.data();
         tousLesProfessionnels.push({
