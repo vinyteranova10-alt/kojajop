@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KojaJob</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -98,94 +96,66 @@
   </div>
   <div id="professionnels"></div>
 </div>
-<script>
-  const FIREBASE_API_KEY =
-    "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA";
-  const PROJECT_ID = "kojajop";
-  const COLLECTION = "Professionnels";
+<script type="module">
+  import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs
+  }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyBjIN5du2p3RoQ8Q_X26Zex1JRRMZdhEPA",
+    authDomain: "kojajop.firebaseapp.com",
+    projectId: "kojajop",
+    storageBucket: "kojajop.firebasestorage.app",
+    messagingSenderId: "982386680439",
+    appId: "1:982386680439:web:ad3098eefc9a7c8d3b9c72",
+    measurementId: "G-PPQRGYQMG9"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
   const message = document.getElementById("message");
   const liste = document.getElementById("professionnels");
   const search = document.getElementById("search");
   let tousLesProfessionnels = [];
-  // --------------------------------------------------
-  // LECTURE DE FIRESTORE
-  // --------------------------------------------------
   async function chargerProfessionnels() {
     message.textContent = "Connexion à Firebase...";
-    const url =
-      "https://firestore.googleapis.com/v1/projects/" +
-      PROJECT_ID +
-      "/databases/(default)/documents/" +
-      COLLECTION +
-      "?key=" +
-      encodeURIComponent(FIREBASE_API_KEY);
     try {
-      const response = await fetch(url);
-      const resultat = await response.json();
-      console.log("Réponse Firebase :", resultat);
-      if (!response.ok) {
-        throw new Error(
-          resultat.error && resultat.error.message
-            ? resultat.error.message
-            : "Erreur lors de la connexion à Firebase."
+      const resultat =
+        await getDocs(
+          collection(db, "Professionnels")
         );
-      }
-      const documents = resultat.documents || [];
-      tousLesProfessionnels = documents.map((document) => {
-        const fields = document.fields || {};
-        return {
-          id: document.name,
-          nom: lireChamp(fields.nom),
-          Metier: lireChamp(fields.Metier),
-          Ville: lireChamp(fields.Ville),
-          Téléphone: lireChamp(fields.Téléphone)
-        };
+      tousLesProfessionnels = [];
+      resultat.forEach((document) => {
+        const data = document.data();
+        tousLesProfessionnels.push({
+          id: document.id,
+          nom: data.nom || "",
+          Metier: data.Metier || "",
+          Ville: data.Ville || "",
+          Téléphone: data.Téléphone || ""
+        });
       });
-      console.log(
-        "Nombre de professionnels trouvés :",
-        tousLesProfessionnels.length
-      );
       if (tousLesProfessionnels.length === 0) {
-        message.innerHTML =
-          "Firebase est connecté, mais aucun document n'a été retourné.";
+        message.textContent =
+          "Firebase est connecté, mais aucun professionnel n'a été trouvé.";
         return;
       }
       message.textContent = "";
-      afficherProfessionnels(tousLesProfessionnels);
-    }
-    catch (error) {
+      afficherProfessionnels(
+        tousLesProfessionnels
+      );
+    } catch (error) {
       console.error("Erreur Firebase :", error);
       message.innerHTML =
         '<div class="erreur">' +
-        "<strong>Erreur de connexion Firebase :</strong><br><br>" +
+        "<strong>Erreur Firebase :</strong><br><br>" +
         escapeHtml(error.message) +
         "</div>";
     }
   }
-  // --------------------------------------------------
-  // LIRE UNE VALEUR FIRESTORE
-  // --------------------------------------------------
-  function lireChamp(champ) {
-    if (!champ) {
-      return "";
-    }
-    if (champ.stringValue !== undefined) {
-      return champ.stringValue;
-    }
-    if (champ.integerValue !== undefined) {
-      return champ.integerValue;
-    }
-    if (champ.doubleValue !== undefined) {
-      return champ.doubleValue;
-    }
-    if (champ.booleanValue !== undefined) {
-      return champ.booleanValue;
-    }
-    return "";
-  }
-  // --------------------------------------------------
-  // AFFICHER LES PROFESSIONNELS
-  // --------------------------------------------------
   function afficherProfessionnels(professionnels) {
     liste.innerHTML = "";
     if (professionnels.length === 0) {
@@ -195,6 +165,10 @@
     }
     message.textContent = "";
     professionnels.forEach((professionnel) => {
+      const carte =
+        document.createElement("div");
+      carte.className =
+        "professionnel";
       const nom =
         professionnel.nom ||
         "Nom non renseigné";
@@ -207,15 +181,11 @@
       const telephone =
         professionnel.Téléphone ||
         "";
-      const carte =
-        document.createElement("div");
-      carte.className =
-        "professionnel";
-      let boutonTelephone = "";
+      let bouton = "";
       if (telephone) {
-        boutonTelephone =
+        bouton =
           '<a class="telephone" href="tel:' +
-          escapeHtml(telephone) +
+          encodeURIComponent(telephone) +
           '">' +
           "📞 Appeler" +
           "</a>";
@@ -230,48 +200,39 @@
         "<p><strong>Ville :</strong> " +
         escapeHtml(ville) +
         "</p>" +
-        boutonTelephone;
+        bouton;
       liste.appendChild(carte);
     });
   }
-  // --------------------------------------------------
-  // RECHERCHE
-  // --------------------------------------------------
-  search.addEventListener(
-    "input",
-    function () {
-      const texte =
-        search.value
-          .toLowerCase()
-          .trim();
-      const resultats =
-        tousLesProfessionnels.filter(
-          function (professionnel) {
-            const nom =
-              String(
-                professionnel.nom || ""
-              ).toLowerCase();
-            const metier =
-              String(
-                professionnel.Metier || ""
-              ).toLowerCase();
-            const ville =
-              String(
-                professionnel.Ville || ""
-              ).toLowerCase();
-            return (
-              nom.includes(texte) ||
-              metier.includes(texte) ||
-              ville.includes(texte)
-            );
-          }
-        );
-      afficherProfessionnels(resultats);
-    }
-  );
-  // --------------------------------------------------
-  // PROTECTION DU TEXTE AFFICHÉ
-  // --------------------------------------------------
+  search.addEventListener("input", () => {
+    const texte =
+      search.value
+        .toLowerCase()
+        .trim();
+    const resultats =
+      tousLesProfessionnels.filter(
+        (professionnel) => {
+          const nom =
+            String(
+              professionnel.nom || ""
+            ).toLowerCase();
+          const metier =
+            String(
+              professionnel.Metier || ""
+            ).toLowerCase();
+          const ville =
+            String(
+              professionnel.Ville || ""
+            ).toLowerCase();
+          return (
+            nom.includes(texte) ||
+            metier.includes(texte) ||
+            ville.includes(texte)
+          );
+        }
+      );
+    afficherProfessionnels(resultats);
+  });
   function escapeHtml(texte) {
     return String(texte)
       .replace(/&/g, "&amp;")
@@ -280,9 +241,6 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
   }
-  // --------------------------------------------------
-  // DÉMARRAGE
-  // --------------------------------------------------
   chargerProfessionnels();
 </script>
 </body>
